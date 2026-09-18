@@ -1,0 +1,232 @@
+<diagram program="umletino" version="15.1"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>306</x><y>0</y><w>243</w><h>243</h></coordinates><panel_attributes>Account
+--
+-id: Integer
+-username: String
+-email: String
+-password: String
+-phone: String
+-firstName: String
+-lastName: String
+-role: String
+-organisation: Organisation
+-accountStatus: AccountStatusEnum
+
+-
++update(): bool
++delete(): bool
++changeStatus(status:AccountStatusEnum): bool
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>486</x><y>333</y><w>297</w><h>153</h></coordinates><panel_attributes>Fundraiser
+--
+
+--
++createCampaign(campaign: Campaign): Campaign
++updateCampaign(campaign: Campaign): bool
++deleteCampaign(campaign: Campaign): bool
++submitCampaignForReview(campaign: Campaign): bool
++pauseCampaign(campaign: Campaign): bool
++unpauseCampaign(campaign: Campaign): bool
++createPost(post:Post,campaignId: Integer): Post</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>72</x><y>324</y><w>297</w><h>234</h></coordinates><panel_attributes>Admin
+--
+
+--
++viewCampaign(campaign: Campaign): Campaign
++approveCampaign(campaign: Campaign): bool
++rejectCampaign(campaign: Campaign): bool
++suspendCampaign(campaign: Campaign): bool
++unsuspendCampaign(campaign: Campaign): bool
++suspendAccount(account: Account): bool
++unsuspendAccount(account: Account): bool
++updateAccountRole(account: Account, role: String): bool
++deleteAccount(account: Account): bool
++reviewReport(report: Report): Report
++updateReport(report: Report): bool 
++removePost(post: Post): bool
++keepPost(report: Report): bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>639</x><y>675</y><w>198</w><h>225</h></coordinates><panel_attributes>Donation
+--
+-id: Integer
+-amount: Float
+-createdDate: DateTime
+-message: String
+-tier: Tier
+-receiptId: String
+-campaign: Campaign
+-paymentType: String
+-customer: Customer
+- isAnonymous: bool
+
+--
++determineTier(amount: Float): Tier
++save(): bool
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>9</x><y>639</y><w>270</w><h>387</h></coordinates><panel_attributes>Campaign
+--
+-id: Integer
+-title: String
+-goalAmount: Float
+-amountRaised: Float
+-status: CampaignStatusEnum
+-location: String
+-eventDate: Date
+-eventStartTime: DateTime 
+-eventEndTime: DateTime
+-overview:String
+-description: String
+-bannerImageUrl: String
+-isFeatured:bool
+-tiers: List&lt;Tier&gt;
+-createdBy: Account
+-createdDate: DateTime
+-updatedDate: DateTime
+-publishDate: DateTime
+-eventType: String
+-organisation: Organisation
+--
++calculateAmountRaised(): Float
++createDraft():Campaign
++update(): bool
++delete(): bool
++changeStatus(status:CampaignStatusEnum): bool
++submitForReview(): Campaign
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>306</x><y>1008</y><w>189</w><h>207</h></coordinates><panel_attributes>Purchase
+--
+-id: Integer
+-noOfTickets: Integer
+-ticketCost: Float
+-totalCost: Float
+-createdDate: DateTime
+-receiptId: String
+-paymentType: String
+-customer: Customer
+
+--
++calculateTotal(): Float
++save(): bool
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>378</x><y>702</y><w>189</w><h>117</h></coordinates><panel_attributes>Tier
+--
+-id: Integer
+-name: String
+-amount: Float
+-benefits: String
+
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>576</x><y>972</y><w>324</w><h>153</h></coordinates><panel_attributes>Customer
+--
+- id: Integer
+- name: String
+- email: String
+- phone: String
+
+--
++donate(amount: Float, tier: Tier, message: String): Donation
++buyTickets(noOfTickets: Integer): Purchase
++reportPost(type: String, postId: Integer)
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>279</x><y>1512</y><w>189</w><h>126</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+CampaignStatusEnum
+--
+Draft,
+Pending,
+Active,
+Paused,
+Suspended,
+Rejected</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>747</x><y>891</y><w>45</w><h>99</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;90;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>486</x><y>1080</y><w>108</w><h>45</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+</panel_attributes><additional_attributes>10;20;100;20</additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>666</y><w>387</w><h>45</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;20;410;20</additional_attributes></element><element><id>Relation</id><coordinates><x>252</x><y>1017</y><w>72</w><h>81</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;10;10;60;60;60</additional_attributes></element><element><id>UMLClass</id><coordinates><x>225</x><y>1233</y><w>189</w><h>180</h></coordinates><panel_attributes>Post
+--
+-id: Integer
+-title: String
+-message: String
+-imageUrl: String
+-createdDate: DateTime
+-updatedDate: DateTime
+-campaignId:Integer
+
+--
+delete(): bool
+save(): Post</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>504</x><y>1233</y><w>270</w><h>198</h></coordinates><panel_attributes>Report
+--
+-id: Integer
+-postId: Integer
+-reason: String
+-type:String
+-status: ReportStatusEnum
+-createdDate: DateTime
+-reviewedBy: Admin
+-reviewedDate: DateTime
+
+--
++changeStatus(status:ReportStatusEnum):bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>36</x><y>1521</y><w>189</w><h>90</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+AccountStatusEnum
+--
+Pending
+Active
+Suspended
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>531</x><y>1521</y><w>189</w><h>90</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+ReportStatusEnum
+--
+ForReview
+ActionTaken
+NoAction</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>1116</y><w>216</w><h>189</h></coordinates><panel_attributes>Analytics
+--
+-id: Integer
+-campaign: Campaign
+-visitorCount: Integer
+-numberOfDonations: Integer
+-numberOfSoldTickets: Integer
+-progressPercentage: Float
+
+--
++calculateVisitorCount(): Integer
++calculateNumberOfDonations(): Integer
++calculateNumberOfSoldTickets(): Integer
++calculateProgressPercentage(): Float
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>234</x><y>1017</y><w>45</w><h>234</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;50;10;10;10;240</additional_attributes></element><element><id>Relation</id><coordinates><x>405</x><y>1287</y><w>117</w><h>45</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+</panel_attributes><additional_attributes>110;20;10;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>54</x><y>90</y><w>189</w><h>135</h></coordinates><panel_attributes>Organisation
+--
+-id: Integer
+-name: String
+-description: String     
+-logoUrl: String           
+
+--
++update(): bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>162</x><y>18</y><w>162</w><h>90</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1</panel_attributes><additional_attributes>160;10;10;10;10;80</additional_attributes></element><element><id>Relation</id><coordinates><x>432</x><y>234</y><w>45</w><h>72</h></coordinates><panel_attributes>lt=&lt;&lt;-
+is an</panel_attributes><additional_attributes>10;10;10;60</additional_attributes></element><element><id>Relation</id><coordinates><x>342</x><y>333</y><w>657</w><h>1170</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+creates</panel_attributes><additional_attributes>10;1200;10;1280;670;1280;670;10;490;10</additional_attributes></element><element><id>Relation</id><coordinates><x>252</x><y>270</y><w>306</w><h>81</h></coordinates><panel_attributes>lt=-
+</panel_attributes><additional_attributes>10;60;10;20;320;20;320;70</additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>477</y><w>252</w><h>198</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+</panel_attributes><additional_attributes>10;190;250;190;250;10</additional_attributes></element><element><id>Relation</id><coordinates><x>9</x><y>90</y><w>63</w><h>567</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+belongs</panel_attributes><additional_attributes>50;10;10;10;10;610</additional_attributes></element><element><id>Relation</id><coordinates><x>558</x><y>693</y><w>99</w><h>45</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;20;90;20</additional_attributes></element><element><id>Relation</id><coordinates><x>360</x><y>513</y><w>576</w><h>792</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+</panel_attributes><additional_attributes>460;850;620;850;620;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>99</x><y>1008</y><w>36</w><h>117</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=1</panel_attributes><additional_attributes>10;10;10;110</additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>743</y><w>126</w><h>36</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*</panel_attributes><additional_attributes>10;10;120;10</additional_attributes></element></diagram>

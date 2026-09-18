@@ -1,0 +1,24 @@
+{% extends 'base.html' %} {% import 'bootstrap5/form.html' as wtf %} {% block
+title %}Login | Culture Music{% endblock %} {% block main %}
+<section class="auth-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <article class="auth-panel fundraiser-panel">
+          <p class="text-uppercase text-muted mb-2">Welcome back</p>
+          <h1 class="section-title">Log in to Culture Music</h1>
+          <p>Access your campaigns, donations, and event activity.</p>
+
+          {{ wtf.render_form(form) }}
+
+          <p class="mt-4 mb-0">
+            New to Culture Music?
+            <a href="{{ url_for('main.register') }}">Create an account</a>
+            .
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

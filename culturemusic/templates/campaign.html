@@ -1,0 +1,605 @@
+{% extends 'base.html' %} {% block title %}Campaign Management | Culture Music
+{% endblock %} {% block main %}
+<main class="campaign-page">
+  <section class="campaign-hero text-white">
+    <div class="container py-5">
+      <div class="row">
+        <div class="col-lg-8">
+          <p
+            class="text-uppercase fw-bold mb-2"
+            style="color: var(--secondary-color)"
+          >
+            Active
+          </p>
+          <h1 class="display-4 fw-bold">Sound of OPM</h1>
+          <p class="lead mb-1">
+            Honouring the soul of Filipino music through heartfelt performances,
+            cultural connection, and the shared pride of OPM artists and fans.
+          </p>
+          <p class="mb-0">
+            Presented by
+            <strong>Pamana Filipino in Brisbane</strong>
+            | The Tivoli, Fortitude Valley
+          </p>
+          <div class="row g-3 mt-3 campaign-meta">
+            <div class="col-sm-4">
+              <strong class="d-block">Event date</strong>
+              <span class="d-block">28 September 2026</span>
+              <span>6:00 pm - 9:00 pm</span>
+            </div>
+            <div class="col-sm-4">
+              <strong class="d-block">Location</strong>
+              <span class="d-block">The Tivoli</span>
+              <span>52 Costin Street, Fortitude Valley, QLD 4006</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-fluid px-4 py-5" aria-labelledby="overview-heading">
+    <div class="row g-4">
+      <div class="col-12">
+        <article class="fundraiser-panel mb-4">
+          <h2 id="overview-heading" class="section-title mb-4">
+            Campaign Overview
+          </h2>
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+              <article class="fundraiser-panel campaign-stat p-3">
+                <span class="stat-label">Fundraising goal</span>
+                <strong class="stat-value d-block">$50,000</strong>
+                <span class="small text-muted">Campaign target</span>
+              </article>
+            </div>
+            <div class="col-6 col-xl-3">
+              <article class="fundraiser-panel campaign-stat p-3">
+                <span class="stat-label">Amount raised</span>
+                <strong class="stat-value d-block">$32,500</strong>
+                <span class="small text-muted">65% of goal</span>
+              </article>
+            </div>
+            <div class="col-6 col-xl-3">
+              <article class="fundraiser-panel campaign-stat p-3">
+                <span class="stat-label">Supporters</span>
+                <strong class="stat-value d-block">128</strong>
+                <span class="small text-muted">Total donations</span>
+              </article>
+            </div>
+            <div class="col-6 col-xl-3">
+              <article class="fundraiser-panel campaign-stat p-3">
+                <span class="stat-label">Visitors</span>
+                <strong class="stat-value d-block">2,846</strong>
+                <span class="small text-muted">Updated today</span>
+              </article>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12">
+        <article class="fundraiser-panel mb-4">
+          <div
+            class="campaign-panel-heading d-flex justify-content-between align-items-center flex-wrap gap-2"
+          >
+            <h2 class="section-title">Campaign List</h2>
+          </div>
+          <p class="small text-muted">
+            Create a new campaign or select an existing one to view, delete,
+            update status, or show statistics.
+          </p>
+          <div
+            class="campaign-management-toolbar d-flex flex-wrap gap-2 mb-3 align-items-center"
+          >
+            <label class="visually-hidden" for="campaign-status-filter"
+              >Filter campaigns by status</label
+            >
+            <select
+              class="form-select campaign-filter-select"
+              id="campaign-status-filter"
+            >
+              <option selected>All campaigns</option>
+              <option>Draft</option>
+              <option>Pending</option>
+              <option>Active</option>
+              <option>Paused</option>
+              <option>Suspended</option>
+            </select>
+            <span class="admin-action-divider" aria-hidden="true"></span>
+            <button class="btn btn-sm btn-outline-danger" type="button">
+              Delete
+            </button>
+            <div class="admin-status-actions ms-xl-auto">
+              <span class="admin-status-label">Update Status</span>
+              <button class="btn btn-sm btn-outline-warning" type="button">
+                Pause
+              </button>
+              <button class="btn btn-sm btn-outline-danger" type="button">
+                Suspend
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table align-middle admin-table mb-0 table-hover">
+              <caption class="visually-hidden">
+                Campaign details
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Campaign</th>
+                  <th scope="col">Event Date</th>
+                  <th scope="col">Goal</th>
+                  <th scope="col">Amount Raised</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="table-active">
+                  <td><strong>Sound of OPM</strong></td>
+                  <td>28 Sep 2026</td>
+                  <td>$50,000</td>
+                  <td>$32,500</td>
+                  <td><span class="badge status-badge">Active</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Masskara Festival in Brisbane</strong></td>
+                  <td>18 Nov 2026</td>
+                  <td>$20,000</td>
+                  <td>$0</td>
+                  <td><span class="badge admin-badge-active">Draft</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Pinoy Christmas</strong></td>
+                  <td>23 Dec 2026</td>
+                  <td>$30,000</td>
+                  <td>$0</td>
+                  <td><span class="badge admin-badge-active">Pending</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            class="campaign-form-actions d-flex flex-wrap align-items-center gap-2 mt-4"
+          >
+            <details class="campaign-form-details">
+              <summary class="btn btn-sm btn-admin-action">
+                Create / View Campaign
+              </summary>
+              <form class="campaign-edit-form mt-4" id="campaign-form-panel">
+                <div class="campaign-panel-heading">
+                  <h3 class="section-title mb-0">Campaign Form</h3>
+                </div>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="campaign-title"
+                      >Campaign Title</label
+                    >
+                    <input
+                      class="form-control"
+                      id="campaign-title"
+                      type="text"
+                      value="Sound of OPM"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="organiser-name"
+                      >Fundraiser / Group</label
+                    >
+                    <input
+                      class="form-control"
+                      id="organiser-name"
+                      type="text"
+                      value="Pamana Filipino in Brisbane"
+                    />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="campaign-description"
+                      >Overview</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="campaign-description"
+                      rows="4"
+                    >
+Pamana Filipino in Brisbane is a Filipino organisation celebrating Filipino music and culture through performances by local artists and community members.The goal of Sound of OPM is to raise funds that support Filipino artists, cultural groups, and community organisations in delivering high‑quality OPM performances and cultural programs. Contributions will help cover artist fees, production costs, venue hire, community workshops, and youth music initiatives that preserve and promote Original Pilipino Music. By reaching this goal, the campaign aims to strengthen cultural pride, expand opportunities for Filipino musicians, and bring the vibrant sound of OPM to broader audiences across the community.</textarea
+                    >
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="campaign-description"
+                      >Description</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="campaign-description"
+                      rows="4"
+                    >
+Honouring the soul of Filipino music through heartfelt performances, cultural connection, and the shared pride of OPM artists and fans.</textarea
+                    >
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="campaign-location"
+                      >Location</label
+                    >
+                    <input
+                      class="form-control"
+                      id="campaign-location"
+                      type="text"
+                      value="The Tivoli - Fortitude Valley"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="campaign-date"
+                      >Event date</label
+                    >
+                    <input
+                      class="form-control"
+                      id="campaign-date"
+                      type="datetime-local"
+                      value="2026-08-22T19:00"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="campaign-status"
+                      >Campaign status</label
+                    >
+                    <select class="form-select" id="campaign-status">
+                      <option selected>Pending</option>
+                      <option>Draft</option>
+                      <option>Active</option>
+                      <option>Paused</option>
+                      <option>Suspended</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="campaign-banner"
+                      >Banner image</label
+                    >
+                    <input
+                      class="form-control"
+                      id="campaign-banner"
+                      type="file"
+                      accept="image/*"
+                    />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="campaign-goal"
+                      >Fundraising goal</label
+                    >
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      <input
+                        class="form-control"
+                        id="campaign-goal"
+                        type="number"
+                        value="50000"
+                        min="1"
+                        step="1"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <fieldset class="mt-4">
+                  <legend class="section-title h4">Donor Tiers</legend>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="tier-option">
+                        <label class="form-label" for="tier-bronze-name"
+                          >Tier level 1</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-bronze-name"
+                          type="text"
+                          value="Bronze"
+                        />
+                        <label class="form-label" for="tier-bronze-amount"
+                          >Amount</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-bronze-amount"
+                          type="number"
+                          value="20"
+                          min="1"
+                        />
+                        <label class="form-label" for="tier-bronze-benefit"
+                          >Recognition benefits</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id="tier-bronze-benefit"
+                          rows="2"
+                        >
+Name listed on donor wall.</textarea
+                        >
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="tier-option">
+                        <label class="form-label" for="tier-silver-name"
+                          >Tier level 2</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-silver-name"
+                          type="text"
+                          value="Silver"
+                        />
+                        <label class="form-label" for="tier-silver-amount"
+                          >Amount</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-silver-amount"
+                          type="number"
+                          value="50"
+                          min="1"
+                        />
+                        <label class="form-label" for="tier-silver-benefit"
+                          >Recognition benefits</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id="tier-silver-benefit"
+                          rows="2"
+                        >
+Support one free community tickets , receive event updates and name listed on donor wall.</textarea
+                        >
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="tier-option">
+                        <label class="form-label" for="tier-gold-name"
+                          >Tier level 3</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-gold-name"
+                          type="text"
+                          value="Gold"
+                        />
+                        <label class="form-label" for="tier-gold-amount"
+                          >Amount</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-gold-amount"
+                          type="number"
+                          value="100"
+                          min="1"
+                        />
+                        <label class="form-label" for="tier-gold-benefit"
+                          >Recognition benefits</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id="tier-gold-benefit"
+                          rows="2"
+                        >
+Highlighted name on donor wall, acknowledgement in the event program and two  event tickets.</textarea
+                        >
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="tier-option">
+                        <label class="form-label" for="tier-platinum-name"
+                          >Tier level 4</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-platinum-name"
+                          type="text"
+                          value="Platinum"
+                        />
+                        <label class="form-label" for="tier-platinum-amount"
+                          >Amount</label
+                        >
+                        <input
+                          class="form-control mb-2"
+                          id="tier-platinum-amount"
+                          type="number"
+                          value="250"
+                          min="1"
+                        />
+                        <label class="form-label" for="tier-platinum-benefit"
+                          >Recognition benefits</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id="tier-platinum-benefit"
+                          rows="2"
+                        >
+Highlighted name on donor wall, receive sponsor recognition, and four event tickets.</textarea
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </fieldset>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                  <button class="btn btn-outline-secondary" type="button">
+                    Save Draft
+                  </button>
+                  <button class="btn btn-search" type="submit">Submit</button>
+                </div>
+              </form>
+            </details>
+          </div>
+        </article>
+
+        <article class="fundraiser-panel mb-4">
+          <div class="campaign-panel-heading">
+            <h2 class="section-title">Posted Updates</h2>
+          </div>
+          <p class="small text-muted mt-2 mb-0">
+            Create or edit campaign updates.
+          </p>
+          <div class="table-responsive">
+            <table class="table align-middle admin-table mb-0 table-hover">
+              <caption class="visually-hidden">
+                Published campaign updates
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Campaign</th>
+                  <th scope="col">Post title</th>
+                  <th scope="col">Published</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Sound of OPM</td>
+                  <td><strong>Local artists confirmed</strong></td>
+                  <td>12 Aug 2026</td>
+                  <td>
+                    <span class="badge admin-badge-active">Published</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Sound of OPM</td>
+                  <td><strong>Community rehearsal day</strong></td>
+                  <td>4 Aug 2026</td>
+                  <td>
+                    <span class="badge admin-badge-active">Published</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <details class="campaign-form-details mt-4">
+            <summary class="btn btn-sm btn-admin-action">
+              Create / Edit Post
+            </summary>
+            <form class="campaign-edit-form mt-4" id="post-form-panel">
+              <div class="campaign-panel-heading">
+                <h3 class="section-title">Campaign Update Form</h3>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="post-campaign">Campaign</label>
+                <select class="form-select" id="post-campaign" required>
+                  <option selected>Sound of OPM</option>
+                  <option>Masskara Festival in Brisbane</option>
+                  <option>Pinoy Christmas</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="post-title">Post title</label>
+                <input
+                  class="form-control"
+                  id="post-title"
+                  type="text"
+                  placeholder="Share a campaign update"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="post-content"
+                  >Update message</label
+                >
+                <textarea
+                  class="form-control"
+                  id="post-content"
+                  rows="4"
+                  placeholder="Write an update for your supporters"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="post-image">Upload image</label>
+                <input
+                  class="form-control"
+                  id="post-image"
+                  type="file"
+                  accept="image/*"
+                />
+              </div>
+              <button class="btn btn-search" type="submit">
+                Publish Update
+              </button>
+            </form>
+          </details>
+        </article>
+
+        <article class="fundraiser-panel mb-4">
+          <div
+            class="campaign-panel-heading d-flex justify-content-between align-items-center"
+          >
+            <h2 class="section-title">Donation History</h2>
+          </div>
+          <p class="small text-muted">
+            Export or filter the list of donations by tier.
+          </p>
+          <div class="table-responsive">
+            <table
+              class="table align-middle donation-table mb-0"
+              id="donation-history-table"
+            >
+              <caption class="visually-hidden">
+                Donation history with donor, amount, date, message and tier
+              </caption>
+
+              <div
+                class="campaign-management-toolbar d-flex flex-wrap gap-2 mb-3 align-items-center"
+              >
+                <label class="visually-hidden" for="campaign-status-filter"
+                  >Filter donors by tier</label
+                >
+                <select
+                  class="form-select campaign-filter-select"
+                  id="campaign-status-filter"
+                >
+                  <option selected>All Tiers</option>
+                  <option>Bronze</option>
+                  <option>Silver</option>
+                  <option>Gold</option>
+                  <option>Platinum</option>
+                </select>
+              </div>
+
+              <thead>
+                <tr>
+                  <th scope="col">Donor</th>
+                  <th scope="col">Amount</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Message</th>
+                  <th scope="col">Tier</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Garyn</td>
+                  <td>$100</td>
+                  <td>20 Aug</td>
+                  <td>Have so much fun!</td>
+                  <td>Gold</td>
+                </tr>
+                <tr>
+                  <td>Anonymous</td>
+                  <td>$50</td>
+                  <td>18 Aug</td>
+                  <td>Keep the music playing.</td>
+                  <td>Silver</td>
+                </tr>
+                <tr>
+                  <td>Sandy</td>
+                  <td>$250</td>
+                  <td>15 Aug</td>
+                  <td>Supporting local artists.</td>
+                  <td>Platinum</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="admin-status-actions ms-xl-auto">
+            <button class="btn btn-sm btn-admin-action" type="button">
+              Export CSV
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

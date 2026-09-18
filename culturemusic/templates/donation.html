@@ -1,0 +1,276 @@
+{% extends 'base.html' %} {% block title %}{{ campaign.title }} {% endblock %}
+{% block main %}
+<main class="donation-page">
+  <section class="fundraiser-hero text-white">
+    <div class="container py-5">
+      <p
+        class="text-uppercase fw-bold mb-2"
+        style="color: var(--secondary-color)"
+      >
+        {{ campaign.status }}
+      </p>
+      <h1 class="display-4 fw-bold">{{ campaign.title }}</h1>
+      <p class="lead">{{ campaign.overview }}</p>
+      <p>
+        Presented by
+        <strong>{{ campaign.organisation.name }}</strong>
+        | {{ campaign.location }}
+      </p>
+      <div class="row g-3 campaign-meta">
+        <div class="col-sm-4">
+          <strong class="d-block">Event date</strong>
+          {{ campaign.event_date }}
+          <br />
+          {{ campaign.event_time }}
+        </div>
+        <div class="col-sm-4">
+          <strong class="d-block">Location</strong>
+          {{ campaign.location }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <article class="fundraiser-panel mb-4">
+            <h2 class="section-title">About the fundraiser</h2>
+            <p>
+              {{ campaign.organisation.description }} {{ campaign.overview }}
+            </p>
+            <p class="mb-0">{{ campaign.description }}</p>
+          </article>
+
+          <article class="fundraiser-panel mb-4">
+            <h2 class="section-title">Donor Tiers</h2>
+            <div class="row g-3">
+              {% for tier in campaign.tiers %}
+              <div class="col-md-6">
+                <div class="tier-option">
+                  <strong
+                    >{{ tier.name }} - ${{ '%.0f'|format(tier.amount) }}</strong
+                  >
+                  <p class="small mb-0">{{ tier.benefits }}</p>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </article>
+
+          <article class="fundraiser-panel mb-4">
+            <h2 class="section-title">Campaign posts</h2>
+            <div class="row g-4 campaign-updates-grid">
+              {% for post in posts %}
+              <div class="col-md-6">
+                <article class="update-card h-100">
+                  <details class="report-menu">
+                    <summary aria-label="Report {{ post.title }} post">
+                      &#8942;
+                    </summary>
+                    <form class="report-form" action="#" method="post">
+                      <p class="report-form-title">Report this post</p>
+                      <label>
+                        <input
+                          type="radio"
+                          name="report-type-{{ post.id }}"
+                          value="Misleading information"
+                          required
+                        />
+                        Misleading information
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name="report-type-{{ post.id }}"
+                          value="Inappropriate content"
+                        />
+                        Inappropriate content
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name="report-type-{{ post.id }}"
+                          value="Spam"
+                        />
+                        Spam
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name="report-type-{{ post.id }}"
+                          value="Other"
+                        />
+                        Other
+                      </label>
+                      <button class="btn btn-sm btn-search" type="submit">
+                        Submit report
+                      </button>
+                    </form>
+                  </details>
+                  <img
+                    src="{{ url_for('static', filename='img/' + post.image_url) }}"
+                    class="update-card-image"
+                    alt="{{ post.title }}"
+                  />
+                  <div class="update-card-body">
+                    <h3 class="update-card-title">{{ post.title }}</h3>
+                    <p class="update-card-date">{{ post.created_date }}</p>
+                    <p class="update-card-text mb-0">{{ post.message }}</p>
+                  </div>
+                </article>
+              </div>
+              {% endfor %}
+            </div>
+          </article>
+        </div>
+
+        <aside class="col-lg-4">
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <details class="donation-details">
+              <summary class="btn btn-search">Donate Now</summary>
+              <article class="donation-panel mb-4" id="donation-form">
+                <h2 class="h3 mb-3">Make a donation</h2>
+                <form action="{{ url_for('main.donation') }}" method="post">
+                  {{ donation_form.hidden_tag() }}
+                  <input type="hidden" name="form_type" value="donation" />
+                  {{ donation_form.donor_name.label(class="form-label") }}{{
+                  donation_form.donor_name(class="form-control mb-3",
+                  autocomplete="name") }} {{
+                  donation_form.donor_email.label(class="form-label") }}{{
+                  donation_form.donor_email(class="form-control mb-3",
+                  autocomplete="email") }} {{
+                  donation_form.donor_phone.label(class="form-label") }}{{
+                  donation_form.donor_phone(class="form-control mb-3",
+                  autocomplete="tel") }} {{
+                  donation_form.donation_amount.label(class="form-label") }}
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">$</span>
+                    {{ donation_form.donation_amount(class="form-control",
+                    min="1") }}
+                  </div>
+                  {{ donation_form.support_level.label(class="form-label") }}{{
+                  donation_form.support_level(class="form-select mb-3") }} {{
+                  donation_form.donor_message.label(class="form-label") }}{{
+                  donation_form.donor_message(class="form-control mb-3",
+                  rows="3") }}
+                  <div class="form-check mb-2">
+                    {{
+                    donation_form.anonymous_donation(class="form-check-input")
+                    }} {{
+                    donation_form.anonymous_donation.label(class="form-check-label")
+                    }}
+                  </div>
+                  <div class="form-check mb-4">
+                    {{ donation_form.campaign_updates(class="form-check-input")
+                    }} {{
+                    donation_form.campaign_updates.label(class="form-check-label")
+                    }}
+                  </div>
+                  {{ donation_form.donation_payment.label(class="form-label")
+                  }}{{ donation_form.donation_payment(class="form-select mb-4")
+                  }} {{ donation_form.submit(class="btn btn-search w-100 py-2")
+                  }}
+                </form>
+              </article>
+            </details>
+            <details class="donation-details">
+              <summary class="btn btn-search">Buy Ticket</summary>
+              <article class="donation-panel mb-4" id="ticket-form">
+                <h2 class="h3 mb-3">Buy tickets</h2>
+                <p class="small text-muted">
+                  Reserve tickets for {{ campaign.title }}.
+                </p>
+                <form action="{{ url_for('main.donation') }}" method="post">
+                  {{ ticket_form.hidden_tag() }}
+                  <input type="hidden" name="form_type" value="ticket" />
+                  {{ ticket_form.ticket_name.label(class="form-label") }}{{
+                  ticket_form.ticket_name(class="form-control mb-3",
+                  autocomplete="name") }} {{
+                  ticket_form.ticket_email.label(class="form-label") }}{{
+                  ticket_form.ticket_email(class="form-control mb-3",
+                  autocomplete="email") }} {{
+                  ticket_form.ticket_phone.label(class="form-label") }}{{
+                  ticket_form.ticket_phone(class="form-control mb-3",
+                  autocomplete="tel") }}
+                  <label class="form-label" for="ticket-cost"
+                    >Ticket cost per person (AUD)</label
+                  >
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">$</span>
+                    <input
+                      class="form-control"
+                      id="ticket-cost"
+                      value="{{ '%.2f'|format(ticket_cost) }}"
+                      readonly
+                    />
+                  </div>
+                  {{ ticket_form.attendees.label(class="form-label") }}{{
+                  ticket_form.attendees(class="form-control mb-3", min="1") }}
+                  {{ ticket_form.ticket_payment.label(class="form-label") }}{{
+                  ticket_form.ticket_payment(class="form-select mb-4") }} {{
+                  ticket_form.submit(class="btn btn-search w-100 py-2") }}
+                </form>
+              </article>
+            </details>
+          </div>
+          <article class="fundraiser-panel mb-4">
+            <h2 class="section-title">Fundraising Progress</h2>
+            <div class="d-flex justify-content-between mb-2">
+              <strong>
+                ${{ '%.2f'|format(campaign.amount_raised) }} raised
+              </strong>
+              <span>of ${{ '%.2f'|format(campaign.goal_amount) }}</span>
+            </div>
+            <div
+              class="progress mb-2"
+              role="progressbar"
+              aria-valuenow="{{ campaign.progress_percentage }}"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div
+                class="progress-bar"
+                style="width: {{ campaign.progress_percentage }}%"
+              >
+                {{ campaign.progress_percentage }}%
+              </div>
+            </div>
+            <p class="small text-muted mb-0">
+              {{ campaign.supporter_count }} supporters · {{
+              campaign.visitor_count }} visitors
+            </p>
+          </article>
+          <article class="fundraiser-panel mb-4">
+            <h2 class="section-title">Recent supporters</h2>
+            <div class="table-responsive">
+              <table class="table align-middle donation-table mb-0">
+                <caption class="visually-hidden">
+                  Recent donations and supporter messages
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Supporter</th>
+                    <th>Amount</th>
+                    <th>Message</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for supporter in supporters %}
+                  <tr>
+                    <td>{{ supporter.name }}</td>
+                    <td>${{ '%.2f'|format(supporter.amount) }}</td>
+                    <td>{{ supporter.message }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

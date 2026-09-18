@@ -1,0 +1,184 @@
+<diagram program="umletino" version="15.1"><zoom_level>8</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>400</x><y>56</y><w>216</w><h>176</h></coordinates><panel_attributes>Account
+--
+-id (PK): int
+--
+-orgId (FK): int
+-username: varchar(50)
+-email: varchar(100)
+-password: varchar(100)
+-phone: varchar(20)
+-firstName: varchar(50)
+-lastName: varchar(50)
+-role: varchar(20)
+-accountStatus: varchar(20)
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>512</x><y>528</y><w>176</w><h>160</h></coordinates><panel_attributes>Donation
+--
+-id (PK): int
+--
+-amount: float
+-createdDate: datetime
+-message: varchar(500)
+-receiptId: varchar(100)
+-paymentType: varchar(50)
+-customerId (FK): int    
+-campaignId (FK): int  
+-tierId (FK): int 
+-isAnonymous: bool
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>160</x><y>320</y><w>240</w><h>280</h></coordinates><panel_attributes>Campaign
+--
+-id (PK): int
+--
+-orgId (FK): int
+-title: varchar(200)
+-goalAmount: float
+-amountRaised: float
+-status: varchar(20)
+-location: varchar(100)
+-eventDate: date
+-eventStartTime: datetime
+-eventEndTime: datetime
+-overview: varchar(500)
+-description: varchar(2000)
+-bannerImageUrl: varchar(255)
+-isFeatured: bool
+-createdBy (FK): int        -- FK to account.id
+-createdDate: datetime
+-updatedDate: datetime
+-publishDate: datetime
+-eventType: varchar(50)
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>248</x><y>832</y><w>168</w><h>144</h></coordinates><panel_attributes>Purchase
+--
+-id (PK): int
+--
+-noOfTickets: int
+-ticketCost: float
+-totalCost: float
+-createdDate: datetime
+-receiptId: varchar(100)
+-paymentType: varchar(50)
+-customerId (FK): int 
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>544</x><y>376</y><w>168</w><h>104</h></coordinates><panel_attributes>Tier
+--
+-id (PK): int
+--
+-campaignId (FK): int
+-name: varchar(100)
+-amount: float
+-benefits: varchar(500
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>488</x><y>832</y><w>192</w><h>120</h></coordinates><panel_attributes>Customer
+--
+- id (PK): int
+--
+-firstName: varchar(50)
+-lastName: varchar(50)
+-email: varchar(100)
+-phone: varchar(20)
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>840</y><w>168</w><h>112</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+CampaignStatusEnum
+--
+Draft
+Pending
+Active
+Paused
+Suspended
+Rejected</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>608</x><y>680</y><w>40</w><h>168</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;190;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>408</x><y>832</y><w>96</w><h>40</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+</panel_attributes><additional_attributes>10;20;100;20</additional_attributes></element><element><id>Relation</id><coordinates><x>392</x><y>520</y><w>136</w><h>40</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;20;150;20</additional_attributes></element><element><id>Relation</id><coordinates><x>336</x><y>592</y><w>40</w><h>256</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;10;10;300</additional_attributes></element><element><id>UMLClass</id><coordinates><x>176</x><y>1064</y><w>168</w><h>128</h></coordinates><panel_attributes>Post
+--
+-id (PK): int
+--
+-campaignId (FK): int
+-title: varchar(200)
+-message: varchar(2000)
+-imageUrl: varchar(255)
+-createdDate: datetime
+-updatedDate: datetime
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>424</x><y>1064</y><w>256</w><h>136</h></coordinates><panel_attributes>Report
+--
+-id (PK): int
+--
+-postId (FK): int
+-reason: varchar(200)
+-type: varchar(50)
+-status: varchar(20)
+-createdDate: datetime
+-reviewedBy (FK): int     -- FK to account.id (admin user)
+-reviewedDate: datetime
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>976</y><w>168</w><h>80</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+AccountStatusEnum
+--
+Pending
+Active
+Suspended
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>1088</y><w>168</w><h>80</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+ReportStatusEnum
+--
+ForReview
+ActionTaken
+NoAction</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>8</x><y>672</y><w>192</w><h>120</h></coordinates><panel_attributes>Analytics
+--
+-id (PK): int
+--
+-campaignId (FK): int 
+-visitorCount: int
+-numberOfDonations: int
+-numberOfSoldTickets: int
+-progressPercentage: float
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>216</x><y>592</y><w>40</w><h>488</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;10;10;590</additional_attributes></element><element><id>Relation</id><coordinates><x>336</x><y>1112</y><w>104</w><h>40</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+</panel_attributes><additional_attributes>110;20;10;20</additional_attributes></element><element><id>UMLClass</id><coordinates><x>128</x><y>56</y><w>168</w><h>112</h></coordinates><panel_attributes>Organisation
+--
+-id (PK): int
+--
+-name: varchar(100)
+-description: varchar(500)
+-logoUrl: varchar(255)
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>224</x><y>0</y><w>288</w><h>72</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1</panel_attributes><additional_attributes>320;70;320;10;10;10;10;70</additional_attributes></element><element><id>Relation</id><coordinates><x>80</x><y>72</y><w>96</w><h>312</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>60;10;10;10;10;360;100;360</additional_attributes></element><element><id>Relation</id><coordinates><x>624</x><y>472</y><w>40</w><h>72</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;10;10;70</additional_attributes></element><element><id>Relation</id><coordinates><x>72</x><y>576</y><w>104</w><h>112</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=1</panel_attributes><additional_attributes>110;10;10;10;10;120</additional_attributes></element><element><id>Relation</id><coordinates><x>608</x><y>112</y><w>176</w><h>992</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>10;10;190;10;200;1210;90;1210</additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>144</y><w>480</w><h>936</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>420;10;580;10;580;1080;10;1080;10;1150</additional_attributes></element><element><id>Relation</id><coordinates><x>360</x><y>160</y><w>56</w><h>176</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=0..*
+</panel_attributes><additional_attributes>50;10;10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>392</x><y>376</y><w>168</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*</panel_attributes><additional_attributes>10;10;190;10</additional_attributes></element></diagram>

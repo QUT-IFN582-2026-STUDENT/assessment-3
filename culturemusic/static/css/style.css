@@ -1,0 +1,887 @@
+html {
+  --primary-color: #009b77;
+  --secondary-color: #fcd116;
+  --accent-color: #fcd116;
+  --text-dark: #333333;
+  --text-medium: #1b4d3e;
+  --text-light: #666666;
+  --border-color: #e0e0e0;
+  --bg-light: #f9f9f9;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* ========================================
+   Header Section
+   ======================================== */
+.header-section {
+  background-color: white;
+}
+
+.navbar-inner {
+  align-items: center;
+  gap: 1rem;
+  min-height: 116px;
+}
+
+.site-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 0 0 190px;
+  max-width: 190px;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.logo {
+  display: block;
+  text-align: left;
+  padding: 0;
+}
+
+.logo img {
+  display: block;
+  height: auto;
+  max-width: 180px;
+  width: 100%;
+}
+
+.brand-tagline {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-medium);
+  text-align: left;
+  font-size: 0.9rem;
+  white-space: normal;
+}
+
+.site-nav {
+  flex: 0 0 auto;
+}
+
+.search-form {
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.header-section .nav-link {
+  color: var(--text-dark);
+  font-weight: 600;
+  transition: color 0.3s ease;
+  border-bottom: 3px solid transparent;
+  font-size: 16px;
+}
+
+.header-section .nav-link:hover {
+  color: var(--primary-color);
+  border-bottom: 3px solid var(--primary-color);
+}
+
+@media (min-width: 992px) {
+  .navbar-collapse {
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-form {
+    display: grid !important;
+    grid-template-columns:
+      minmax(140px, 1.15fr) minmax(140px, 1.15fr) minmax(120px, 0.9fr)
+      auto auto;
+    gap: 0.25rem !important;
+    align-items: center;
+  }
+
+  .search-form .search-input,
+  .search-form .filter-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .search-form .btn-search {
+    width: 90px;
+    min-width: 70px;
+    margin-right: 0.25rem;
+  }
+
+  .search-form .btn-login {
+    width: 90px;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar-inner {
+    min-height: 0;
+  }
+
+  .navbar-collapse {
+    padding-top: 1rem;
+  }
+
+  .search-form {
+    align-items: stretch !important;
+    width: 100%;
+  }
+
+  .search-form .search-input,
+  .search-form .filter-select,
+  .search-form .btn-search,
+  .search-form .btn-login {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+.search-input,
+.form-control {
+  border: 2px solid var(--border-color);
+  border-radius: 5px;
+  padding: 12px 15px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.search-input {
+  min-width: 220px;
+  flex: 1 1 220px;
+}
+
+.filter-select,
+.form-select {
+  border: 2px solid var(--border-color);
+  border-radius: 5px;
+  padding: 12px 15px;
+  font-size: 15px;
+  transition: border-color 0.3s ease;
+  background-color: white;
+  color: var(--text-dark);
+}
+
+.filter-select {
+  min-width: 150px;
+  flex: 1 1 150px;
+}
+
+.search-input:hover,
+.filter-select:hover,
+.form-control:hover,
+.form-select:hover {
+  border-color: var(--primary-color);
+}
+
+.search-input:focus,
+.filter-select:focus,
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 8px rgba(0, 155, 119, 0.15);
+}
+
+.form-control:focus,
+.form-select:focus {
+  outline: none;
+}
+
+.btn-search,
+.btn-login {
+  min-height: 38px;
+  padding: 8px 14px;
+  line-height: 1.2;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-search {
+  background-color: var(--primary-color);
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.btn-search:hover,
+.btn-search:focus,
+.btn-view:hover,
+.btn-view:focus {
+  background-color: #6b3410;
+  color: white;
+}
+
+.btn-login {
+  background-color: var(--secondary-color);
+  color: var(--text-dark);
+  transition: background-color 0.3s ease;
+}
+
+.btn-login:hover,
+.btn-login:focus {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.auth-panel {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 2rem;
+  box-shadow: 0 4px 16px rgba(27, 77, 62, 0.08);
+}
+
+.btn-search:focus,
+.btn-view:focus,
+.admin-page button:focus {
+  box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.45);
+  outline: none;
+}
+
+/* ========================================
+    Fundraiser Hero
+    ======================================== */
+.fundraiser-hero {
+  background: url("../img/artesitalia-conductor-5157153_1920.jpg") center/cover;
+  position: relative;
+  min-height: 400px;
+}
+
+.fundraiser-hero > .container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+}
+
+.home-hero {
+  background: url("../img/djovan-generated-9233757_1920.jpg") center/cover;
+  position: relative;
+  min-height: 40vh;
+}
+
+.fundraiser-hero::before {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.18);
+  z-index: 2;
+}
+
+.fundraiser-hero::before {
+  content: "";
+}
+
+.campaign-meta {
+  color: white;
+}
+
+.campaign-meta strong {
+  color: var(--secondary-color);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.hero-title {
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-subtitle {
+  color: #f0f0f0;
+  font-size: 17px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.hero-values {
+  margin-top: 10px;
+}
+
+.hero-values article {
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.28);
+  border-top: 3px solid var(--secondary-color);
+}
+
+.hero-values h2 {
+  color: var(--secondary-color);
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+}
+
+.hero-values p {
+  color: #f0f0f0;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+/* ========================================
+   Featured Fundraisers Section
+   ======================================== */
+.featured-section {
+  background-color: white;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--primary-color);
+  /* border-left: 5px solid var(--primary-color);
+    padding-left: 15px; */
+}
+
+.event-filter-option {
+  border: 1px solid var(--primary-color);
+  border-radius: 999px;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.event-filter-option:hover,
+.event-filter-option:focus-visible,
+.event-filter-option.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.event-filter-option:focus-visible {
+  box-shadow: 0 0 0 3px rgba(252, 209, 22, 0.45);
+  outline: none;
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: var(--bg-light);
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-title {
+  color: var(--text-dark);
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.card-organiser {
+  color: var(--text-light);
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.amount-raised {
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+.btn-view {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 14px;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+  align-self: flex-start;
+}
+
+.btn-view:hover {
+  background-color: #6b3410;
+  color: white;
+}
+
+/* ========================================
+   Administration Dashboard
+   ======================================== */
+.admin-page {
+  background-color: var(--bg-light);
+}
+
+.admin-stat {
+  border-top: 4px solid var(--primary-color);
+  height: 100%;
+}
+
+.admin-stat-label {
+  color: var(--text-light);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.admin-stat-value {
+  color: var(--primary-color);
+  font-size: 1.9rem;
+}
+
+.featured-admin-table th:first-child,
+.featured-admin-table td:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.admin-panel-heading {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+}
+
+.admin-table th {
+  color: var(--text-medium);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  min-width: 110px;
+}
+
+.admin-search {
+  max-width: 280px;
+}
+
+.admin-filter-select {
+  max-width: 180px;
+}
+
+.admin-action-divider {
+  border-left: 1px solid var(--border-color);
+  height: 28px;
+  margin: 0 0.25rem;
+}
+
+.admin-status-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-status-label {
+  color: var(--text-medium);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-admin-action {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.btn-admin-action:hover,
+.btn-admin-action:focus,
+.btn-admin-action:active,
+.admin-page .btn-success:hover,
+.admin-page .btn-success:focus,
+.admin-page .btn-success:active {
+  background-color: #6b3410;
+  border-color: #6b3410;
+  color: white;
+}
+
+.admin-badge-pending {
+  background-color: var(--secondary-color);
+  color: var(--text-dark);
+}
+
+.admin-badge-active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.admin-badge-paused {
+  background-color: #6c757d;
+  color: white;
+}
+
+.admin-badge-suspended,
+.admin-badge-reported {
+  background-color: #b02a37;
+  color: white;
+}
+
+@media (max-width: 767px) {
+  .admin-search,
+  .admin-filter-select {
+    max-width: none;
+    width: 100%;
+  }
+
+  .admin-action-divider {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+    height: 1px;
+    margin: 0.25rem 0;
+    width: 100%;
+  }
+
+  .admin-status-actions {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .admin-status-actions .admin-status-label {
+    flex-basis: 100%;
+  }
+}
+
+/* ========================================
+   Footer Section
+   ======================================== */
+.footer-section {
+  background-color: var(--primary-color);
+  color: white;
+  border-top: 3px solid var(--secondary-color);
+}
+
+.footer-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--accent-color);
+}
+
+.footer-nav {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.footer-nav a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-nav a:hover {
+  color: var(--accent-color);
+}
+
+/* ========================================
+   Donation Page
+   ======================================== */
+.fundraiser-panel,
+.donation-panel,
+.update-panel {
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: white;
+  box-shadow: 0 3px 12px rgba(27, 77, 62, 0.08);
+}
+
+.fundraiser-panel,
+.update-panel {
+  padding: 18px;
+}
+
+.donation-page > section > .container {
+  max-width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.main-content,
+.donation-page > section > .container > .row {
+  --bs-gutter-x: 1rem;
+}
+
+.donation-panel {
+  border-top: 5px solid var(--secondary-color);
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.donation-details summary {
+  display: inline-block;
+  list-style: none;
+  cursor: pointer;
+}
+
+.donation-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.donation-details[open] summary {
+  margin-bottom: 24px;
+}
+
+.progress {
+  height: 18px;
+  background-color: #e8eee9;
+}
+
+.progress-bar {
+  background-color: var(--primary-color);
+}
+
+.tier-option {
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 12px;
+  height: 100%;
+}
+
+.tier-option strong {
+  color: var(--primary-color);
+}
+
+.update-image {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  object-position: center;
+  background-color: var(--bg-light);
+}
+
+.campaign-updates-grid {
+  align-items: stretch;
+}
+
+.update-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: white;
+  box-shadow: 0 3px 12px rgba(27, 77, 62, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.report-menu {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+.report-menu summary {
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-dark);
+  cursor: pointer;
+  display: flex;
+  font-size: 1.35rem;
+  height: 32px;
+  justify-content: center;
+  line-height: 1;
+  list-style: none;
+  width: 32px;
+}
+
+.report-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.report-menu summary:hover,
+.report-menu summary:focus-visible {
+  background-color: var(--primary-color);
+  color: white;
+  outline: none;
+}
+
+.report-form {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  box-shadow: 0 4px 14px rgba(27, 77, 62, 0.18);
+  padding: 14px;
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 230px;
+}
+
+.report-form-title {
+  color: var(--text-dark);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.report-form fieldset {
+  border: 0;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.report-form label {
+  color: var(--text-light);
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 7px;
+}
+
+.report-form input {
+  accent-color: var(--primary-color);
+  margin-right: 5px;
+}
+
+.update-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(27, 77, 62, 0.14);
+}
+
+.update-card-image {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.update-card-body {
+  padding: 20px;
+}
+
+.update-card-title {
+  color: var(--text-dark);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.update-card-date {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.update-card-text {
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.donation-table th {
+  color: var(--text-medium);
+  white-space: nowrap;
+}
+
+/* ========================================
+   Campaign Dashboard
+   ======================================== */
+.campaign-page {
+  background-color: var(--bg-light);
+}
+
+.campaign-hero {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.52)),
+    url("../img/clickerhappy-mic-1132528_1920.jpg") center/cover;
+}
+
+.campaign-hero .badge,
+.status-badge {
+  background-color: var(--secondary-color) !important;
+  color: var(--text-dark) !important;
+}
+
+.campaign-hero .btn-outline-light:hover {
+  color: var(--text-dark);
+}
+
+.campaign-stat {
+  border-top: 4px solid var(--primary-color);
+  height: 100%;
+}
+
+.campaign-stat .stat-value {
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.campaign-stat .stat-label {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.campaign-panel-heading {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+}
+
+@media (min-width: 992px) {
+  .campaign-management-toolbar {
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+  }
+
+  .campaign-management-toolbar .campaign-filter-select {
+    flex: 1 1 220px;
+    max-width: 260px;
+  }
+
+  .campaign-management-toolbar .admin-status-actions {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .campaign-hero h1 {
+    font-size: 2rem;
+  }
+
+  .campaign-hero .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .fundraiser-hero {
+    min-height: 420px;
+  }
+
+  .fundraiser-hero h1 {
+    font-size: 2rem;
+  }
+}

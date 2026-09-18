@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Culture Music{% endblock %}</title>
+    <meta name="description" content="Culture Music" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+      crossorigin="anonymous" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+
+  <body>
+    <header class="header-section sticky-top">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid navbar-inner">
+          <a class="navbar-brand site-brand text-decoration-none" href="{{ url_for('main.index') }}">
+            <div class="logo">
+              <img src="{{ url_for('static', filename='img/logo-cm150x63.png') }}" alt="Culture Music Festival Logo" />
+            </div>
+            <div class="brand-tagline fst-italic">Celebrate Heritage Music</div>
+          </a>
+
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav site-nav mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('main.index') }}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.campaign') }}">Campaign</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.donation') }}">Donation</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.admin') }}">Admin</a>
+              </li>
+            </ul>
+            <form class="search-form d-flex flex-wrap gap-2 align-items-center" role="search">
+              <input
+                class="form-control search-input"
+                type="search"
+                placeholder="Search Events"
+                aria-label="Search Events" />
+              <select class="form-select filter-select gap-2" name="location" aria-label="Choose Location">
+                <option value="">Choose Location</option>
+                <option value="brisbane">Brisbane</option>
+                <option value="gold_coast">Gold Coast</option>
+                <option value="sunshine_coast">Sunshine Coast</option>
+              </select>
+              <div class="d-flex px-2 gap-2">
+                <button class="btn btn-search" type="submit">Search</button>
+                <a class="btn btn-login d-inline-flex align-items-center" href="{{ url_for('main.login') }}">Login</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    {% block head %}{% endblock %}
+
+    <main class="main-content">{% block main %}{% endblock %}</main>
+
+    <footer class="footer-section">
+      <div class="container-fluid py-5">
+        <div class="row">
+          <div class="col-md-8">
+            <nav class="footer-nav mb-4">
+              <a href="#guidelines">Privacy &amp; Fundraising Guidelines</a>
+              |
+              <a href="#terms">Terms and Conditions</a>
+              |
+              <a href="#contact">Contact Us</a>
+              |
+              <a href="#login">Login/Register</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"></script>
+  </body>
+</html>

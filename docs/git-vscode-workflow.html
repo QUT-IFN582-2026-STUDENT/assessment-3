@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Git and VS Code Workflow Guide</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 18mm 16mm;
+      }
+      :root {
+        --ink: #17212b;
+        --muted: #536372;
+        --blue: #125b9a;
+        --pale: #eaf3fb;
+        --line: #cbd7e2;
+        --gold: #f3b33d;
+        font-size: 10.5pt;
+        margin: 0;
+      }
+      h1 {
+        color: var(--blue);
+        font-size: 26pt;
+        line-height: 1.08;
+        margin: 0 0 5px;
+      }
+      h2 {
+        color: var(--blue);
+        font-size: 16pt;
+        border-bottom: 2px solid var(--gold);
+        padding-bottom: 3px;
+        margin: 24px 0 9px;
+        page-break-after: avoid;
+      }
+      h3 {
+        font-size: 12pt;
+        margin: 15px 0 5px;
+        page-break-after: avoid;
+      }
+      p {
+        margin: 6px 0;
+      }
+      .subtitle {
+        color: var(--muted);
+        font-size: 13pt;
+        margin-bottom: 18px;
+      }
+      .note,
+      .warning,
+      .definition {
+        padding: 9px 11px;
+        margin: 9px 0;
+        border-left: 4px solid var(--blue);
+        background: var(--pale);
+        page-break-inside: avoid;
+      }
+      .warning {
+        border-left-color: #bd7410;
+        background: #fff6df;
+      }
+      .definition {
+        border-left-color: #2b8060;
+        background: #edf8f1;
+      }
+      code,
+      pre {
+        font-family: Consolas, "Courier New", monospace;
+      }
+      code {
+        background: #eef1f4;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+      pre {
+        background: #17212b;
+        color: #f2f6f8;
+        padding: 9px 11px;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        font-size: 9pt;
+        line-height: 1.35;
+        margin: 7px 0 10px;
+        page-break-inside: avoid;
+      }
+      ol {
+        padding-left: 24px;
+      }
+      li {
+        margin: 4px 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 12px;
+        font-size: 9.5pt;
+        page-break-inside: avoid;
+      }
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 6px 7px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: var(--pale);
+        color: var(--blue);
+      }
+      .check {
+        color: #176b4b;
+        font-weight: bold;
+      }
+      .small {
+        color: var(--muted);
+        font-size: 9pt;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .footer {
+        border-top: 1px solid var(--line);
+        margin-top: 22px;
+        padding-top: 7px;
+        color: var(--muted);
+        font-size: 8.5pt;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Git and VS Code Workflow</h1>
+    <div class="subtitle">Beginner guide for the IFN582 assessment repository</div>
+    <p>
+      <strong>Repository:</strong>
+      <code>https://github.com/Garyn-QUT/ifn582-assessment-3.git</code>
+    </p>
+    <p>
+      <strong>Team branches:</strong>
+      <code>dev</code>
+      is the integration/default working branch.
+      <code>master</code>
+      is a separate branch and is not the target for normal student pull requests.
+    </p>
+    <div class="definition">
+      <strong>The basic idea:</strong>
+      download the repository once, update your local copy from
+      <code>dev</code>
+      , do your work on a feature branch, commit it, push that branch to GitHub, and open a pull request from your
+      feature branch into
+      <code>dev</code>
+      .
+    </div>
+
+    <h2>1. Install Git on Windows</h2>
+    <ol>
+      <li>Open <a href="https://git-scm.com/install/windows">https://git-scm.com/install/windows</a>.</li>
+      <li>Download <strong>Git for Windows</strong> and run the installer.</li>
+      <li>
+        The default installer choices are suitable for this workflow. Ensure Git is added to the command line/PATH when
+        prompted.
+      </li>
+      <li>Restart VS Code after installation.</li>
+      <li>Open PowerShell, Git Bash, or the VS Code terminal and check the installation:</li>
+    </ol>
+    <pre>git --version</pre>
+    <p>
+      You should see a Git version such as
+      <code>git version 2.x.x</code>
+      .
+    </p>
+    <h3>Configure your Git identity</h3>
+    <p>
+      After restarting VS Code and opening PowerShell, Git Bash, or the VS Code terminal, configure the name and email
+      Git records on every commit. Use the email address connected to your GitHub account, or your GitHub-provided
+      private email address if you do not want to expose your personal email.
+    </p>
+    <pre>git config --global user.name "Your Full Name"
+git config --global user.email "your-email@example.com"</pre>
+    <p>Check that Git saved the settings:</p>
+    <pre>git config --global user.name
+git config --global user.email</pre>
+    <div class="note">
+      <strong>Important:</strong>
+      <code>user.name</code>
+      is the name displayed on your commits; it is not necessarily your GitHub username. The email should match an email
+      verified on GitHub if you want GitHub to associate the commit with your account.
+    </div>
+    <p>
+      You also need a GitHub account with access to the repository. For HTTPS authentication, GitHub may ask you to sign
+      in through a browser or credential manager. GitHub does not accept an ordinary account password as a Git password;
+      use the sign-in prompt or a personal access token if requested.
+    </p>
+
+    <h2>2. Clone the repository</h2>
+    <p>
+      Cloning makes a complete local copy of the GitHub repository. Run these commands in the parent folder where you
+      keep your course work:
+    </p>
+    <pre>
+  cd "C:\Users\<yourUser>\IFN582"
+  git clone https://github.com/Garyn-QUT/ifn582-assessment-3.git
+  cd ifn582-assessment-3</pre
+    >
+    <p>Check that the repository is connected to GitHub:</p>
+    <pre>
+git remote -v
+git status</pre
+    >
+    <p>
+      The remote normally has the name
+      <code>origin</code>
+      . The
+      <code>origin</code>
+      URL should be the repository URL above.
+    </p>
+
+    <h2>3. Start from the latest dev branch</h2>
+    <p>Run this whenever you begin work or before creating a new feature branch:</p>
+    <pre>
+git fetch origin
+git switch dev
+git pull --ff-only origin dev</pre
+    >
+    <div class="warning">
+      <strong>Do not skip this check:</strong>
+      never start new work with uncommitted changes on
+      <code>dev</code>
+      . Run
+      <code>git status</code>
+      . If it reports changes you did not intend to handle yet, ask the team before continuing.
+    </div>
+
+    <h2>4. Create a local feature branch and its remote branch</h2>
+    <p>
+      Choose a descriptive branch name, for example
+      <code>feature/donation-form</code>
+      or
+      <code>fix/login-validation</code>
+      :
+    </p>
+    <pre>git switch -c feature/your-short-description</pre>
+    <p>
+      This creates and switches to a
+      <strong>local</strong>
+      branch. Make your code changes, then save the files.
+    </p>
+    <p>
+      At this point the branch exists only on your computer. Create its
+      <strong>remote branch</strong>
+      on GitHub by pushing it:
+    </p>
+    <pre>git push -u origin feature/your-short-description</pre>
+    <p>
+      The
+      <code>-u</code>
+      option sets the upstream connection. Later, while on this branch, you can usually use just
+      <code>git push</code>
+      and
+      <code>git pull</code>
+      .
+    </p>
+    <table>
+      <tr>
+        <th>Term</th>
+        <th>Meaning</th>
+      </tr>
+      <tr>
+        <td><code>dev</code></td>
+        <td>Shared integration branch where reviewed work is combined.</td>
+      </tr>
+      <tr>
+        <td>local branch</td>
+        <td>Your branch stored on your computer.</td>
+      </tr>
+      <tr>
+        <td>remote branch</td>
+        <td>
+          A branch stored on GitHub, such as
+          <code>origin/feature/donation-form</code>
+          .
+        </td>
+      </tr>
+      <tr>
+        <td><code>origin</code></td>
+        <td>The short name for the GitHub repository you cloned.</td>
+      </tr>
+    </table>
+
+    <h2>5. Review and commit your changes</h2>
+    <p>Before committing, inspect what changed:</p>
+    <pre>
+git status
+git diff</pre
+    >
+    <p>
+      Run the project tests or start the application as required by the assessment. Then stage only the files that
+      belong to this task:
+    </p>
+    <pre>git add path/to/file.py path/to/template.html</pre>
+    <p>Or stage all changed files if you have checked every change carefully:</p>
+    <pre>git add .</pre>
+    <p>Review the staged version and create a clear commit:</p>
+    <pre>
+git diff --staged
+git commit -m "Add donation form validation"</pre
+    >
+    <div class="note">
+      <strong>A commit is local.</strong>
+      It records a safe checkpoint on your computer. It does not appear on GitHub until you push it.
+    </div>
+
+    <h2>6. Keep your feature branch up to date with dev</h2>
+    <p>
+      Before opening a pull request, and whenever the team tells you that
+      <code>dev</code>
+      has changed, merge the latest
+      <code>dev</code>
+      into your feature branch:
+    </p>
+    <pre>
+git switch feature/your-short-description
+git fetch origin
+git merge origin/dev</pre
+    >
+    <p>If the merge completes automatically, run tests and push the result:</p>
+    <pre>git push</pre>
+    <p>
+      This is the normal direction:
+      <strong>
+        <code>dev</code>
+        into your feature branch
+      </strong>
+      . Do not merge your feature branch into
+      <code>dev</code>
+      locally as a substitute for a pull request unless your team explicitly asks you to.
+    </p>
+
+    <h2>7. Resolve a merge conflict in VS Code</h2>
+    <p>
+      A conflict means Git found edits to the same lines and cannot choose automatically. The merge is paused until you
+      decide what the final code should be.
+    </p>
+    <ol>
+      <li>Start the merge from the VS Code integrated terminal:</li>
+    </ol>
+    <pre>
+git fetch origin
+git switch feature/your-short-description
+git merge origin/dev</pre
+    >
+    <ol start="2">
+      <li>
+        In VS Code, open
+        <strong>Source Control</strong>
+        . Conflicted files appear under
+        <strong>Merge Changes</strong>
+        . Select a file to open the Merge Editor.
+      </li>
+      <li>
+        For each conflict, choose
+        <strong>Accept Current Change</strong>
+        to keep your feature-branch version,
+        <strong>Accept Incoming Change</strong>
+        to keep the incoming
+        <code>dev</code>
+        version, or
+        <strong>Accept Both Changes</strong>
+        when both pieces belong. You can also edit the result directly.
+      </li>
+      <li>
+        Read the resulting file as normal code. Make sure imports, indentation, brackets, HTML, and business logic are
+        correct. The final file must not contain markers such as
+        <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>
+        ,
+        <code>=======</code>
+        , or
+        <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>
+        .
+      </li>
+      <li>
+        Save the file. In Source Control, stage it with the
+        <strong>+</strong>
+        button, or run:
+      </li>
+    </ol>
+    <pre>git add path/to/conflicted-file.py</pre>
+    <ol start="6">
+      <li>When every conflict is staged, finish the merge:</li>
+    </ol>
+    <pre>
+git status
+git commit -m "Merge dev into feature/your-short-description"
+python -m compileall culturemusic
+git push</pre
+    >
+    <div class="warning">
+      <strong>
+        Do not run
+        <code>git commit</code>
+        until every conflict is resolved.
+      </strong>
+      If you need to abandon the in-progress merge before committing, use
+      <code>git merge --abort</code>
+      . This returns the branch to its state before the merge.
+    </div>
+
+    <h2>8. Configure VS Code as Git's merge tool</h2>
+    <p>
+      VS Code's built-in Merge Editor is usually the easiest option. You can also configure Git so
+      <code>git mergetool</code>
+      opens conflicts in VS Code: Use 'single quote' on PowerShell or "double quotes" on Git Bash for 2nd line.
+    </p>
+    <pre>
+git config --global merge.tool vscode
+git config --global mergetool.vscode.cmd "code --wait --merge $REMOTE $LOCAL $BASE $MERGED"
+git config --global mergetool.keepBackup false</pre
+    >
+    <p>When a merge conflict exists, launch the tool with:</p>
+    <pre>git mergetool</pre>
+    <p>The VS Code Merge Editor shows:</p>
+    <ul>
+      <li>
+        <strong>Incoming</strong>
+        or
+        <strong>REMOTE</strong>
+        : the version coming from
+        <code>dev</code>
+        .
+      </li>
+      <li>
+        <strong>Current</strong>
+        or
+        <strong>LOCAL</strong>
+        : your feature-branch version.
+      </li>
+      <li>
+        <strong>Result</strong>
+        : the file Git will keep after you save it.
+      </li>
+    </ul>
+    <p>Save and close the editor when the result is correct, then stage and finish the merge:</p>
+    <pre>
+git add path/to/file
+git status
+git commit -m "Resolve merge conflict with dev"
+git push</pre
+    >
+    <p>
+      If the command reports that no tool is configured, use the Source Control Merge Editor described in the previous
+      section. It performs the same choices without requiring a command-line tool configuration.
+    </p>
+
+    <h2>9. Push and create a pull request into dev</h2>
+    <p>Make sure your feature branch is current, committed, and tested:</p>
+    <pre>
+git status
+git log --oneline --decorate -5
+git push</pre
+    >
+    <ol>
+      <li>
+        Open
+        <a href="https://github.com/Garyn-QUT/ifn582-assessment-3">the repository on GitHub</a>
+        .
+      </li>
+      <li>
+        GitHub may show a banner for your recently pushed branch. Select
+        <strong>Compare &amp; pull request</strong>
+        . Otherwise open
+        <strong>Pull requests</strong>
+        , select
+        <strong>New pull request</strong>
+        , and choose your feature branch as the source.
+      </li>
+      <li>
+        Set the base repository and base branch to
+        <code>dev</code>
+        . The comparison should be
+        <code>your-feature-branch -&gt; dev</code>
+        .
+      </li>
+      <li>Write a useful title and description. Include what changed, how you tested it, and any known limitations.</li>
+      <li>
+        Review the changed files and confirm there are no accidental files or secrets. Select
+        <strong>Create pull request</strong>
+        .
+      </li>
+      <li>
+        Respond to review comments by editing locally, committing, and running
+        <code>git push</code>
+        . New commits automatically appear in the open pull request.
+      </li>
+      <li>
+        After the pull request is merged, update your local
+        <code>dev</code>
+        branch before starting the next task:
+      </li>
+    </ol>
+    <pre>
+git switch dev
+git pull --ff-only origin dev
+git branch -d feature/your-short-description</pre
+    >
+    <p>
+      Deleting the local branch is optional. Delete the remote branch from GitHub only after the pull request is merged
+      and your team agrees.
+    </p>
+
+    <h2>10. Quick daily checklist</h2>
+    <table>
+      <tr>
+        <th>When</th>
+        <th>Commands</th>
+      </tr>
+      <tr>
+        <td>Start work</td>
+        <td>
+          <code>git switch dev</code>
+          <br />
+          <code>git pull --ff-only origin dev</code>
+          <br />
+          <code>git switch -c feature/name</code>
+        </td>
+      </tr>
+      <tr>
+        <td>Before commit</td>
+        <td>
+          <code>git status</code>
+          <br />
+          <code>git diff</code>
+          <br />
+          <code>git add .</code>
+          <br />
+          <code>git diff --staged</code>
+        </td>
+      </tr>
+      <tr>
+        <td>Save work on GitHub</td>
+        <td>
+          <code>git commit -m "Describe the change"</code>
+          <br />
+          <code>git push -u origin feature/name</code>
+        </td>
+      </tr>
+      <tr>
+        <td>Update from dev</td>
+        <td>
+          <code>git fetch origin</code>
+          <br />
+          <code>git merge origin/dev</code>
+          <br />
+          Resolve conflicts, test, then
+          <code>git push</code>
+        </td>
+      </tr>
+      <tr>
+        <td>Check where you are</td>
+        <td>
+          <code>git branch --show-current</code>
+          <br />
+          <code>git status</code>
+        </td>
+      </tr>
+    </table>
+
+    <h2>Common mistakes</h2>
+    <ul>
+      <li>
+        <strong>“I committed, but GitHub did not change.”</strong>
+        You probably forgot
+        <code>git push</code>
+        .
+      </li>
+      <li>
+        <strong>“My branch is not on GitHub.”</strong>
+        Push it with
+        <code>git push -u origin branch-name</code>
+        .
+      </li>
+      <li>
+        <strong>“I am on the wrong branch.”</strong>
+        Check
+        <code>git branch --show-current</code>
+        before editing or committing.
+      </li>
+      <li>
+        <strong>“Git says I have conflicts.”</strong>
+        Open every file under Merge Changes, resolve it, stage every resolved file, then commit.
+      </li>
+      <li>
+        <strong>“I merged the wrong thing.”</strong>
+        Stop and ask the team before pushing. Do not delete or reset shared branches.
+      </li>
+      <li>
+        <strong>“Git wants a username/password.”</strong>
+        Complete the GitHub sign-in flow or configure the approved GitHub authentication method; do not share
+        credentials.
+      </li>
+    </ul>
+    <div class="footer">
+      Prepared for IFN582 assessment development. Repository workflow target: pull requests into
+      <code>dev</code>
+      .
+    </div>
+  </body>
+</html>

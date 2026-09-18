@@ -1,0 +1,34 @@
+{% extends 'base.html' %} {% import 'bootstrap5/form.html' as wtf %} {% block
+title %}Register | Culture Music{% endblock %} {% block main %}
+<section class="auth-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <article class="auth-panel fundraiser-panel">
+          <p class="text-uppercase text-muted mb-2">Join the community</p>
+          <h1 class="section-title">Create your account</h1>
+          <p>
+            Register to support cultural events and connect with community
+            organisations.
+          </p>
+
+          <form method="post" novalidate>
+            {{ form.hidden_tag() }} {{ wtf.render_field(form.username) }} {{
+            wtf.render_field(form.password) }} {{ wtf.render_field(form.email)
+            }} {{ wtf.render_field(form.firstname) }} {{
+            wtf.render_field(form.surname) }} {{ wtf.render_field(form.phone) }}
+            {{ wtf.render_field(form.organisation) }} {{
+            wtf.render_field(form.submit) }}
+          </form>
+
+          <p class="mt-4 mb-0">
+            Already have an account?
+            <a href="{{ url_for('main.login') }}">Log in</a>
+            .
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
