@@ -44,7 +44,7 @@ See the complete beginner guide, including feature branches, merge conflict reso
 
    ```bash
    cd "C:\Users\<userName>\IFN582"
-   git clone https://github.com/Garyn-QUT/ifn582-assessment-3.git
+   git clone https://github.com/QUT-IFN582-2026-STUDENT/assessment-3.git
    cd ifn582-assessment-3
    ```
 
