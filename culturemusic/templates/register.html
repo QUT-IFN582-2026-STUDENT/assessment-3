@@ -18,7 +18,7 @@ title %}Register | Culture Music{% endblock %} {% block main %}
             }} {{ wtf.render_field(form.firstname) }} {{
             wtf.render_field(form.surname) }} {{ wtf.render_field(form.phone) }}
             {{ wtf.render_field(form.organisation) }} {{
-            wtf.render_field(form.submit) }}
+            wtf.render_field(form.submit, class="btn btn-search") }}
           </form>
 
           <p class="mt-4 mb-0">
