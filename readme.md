@@ -59,7 +59,7 @@ See the complete beginner guide, including feature branches, merge conflict reso
 8. Create a feature branch before making changes:
 
    ```bash
-   git switch -c feature/your-short-description
+   git switch -c feature/yourstudentid-component
    ```
 
 9. Make and test your code changes. Review and commit them:
@@ -76,14 +76,16 @@ See the complete beginner guide, including feature branches, merge conflict reso
 10. Push your local feature branch to GitHub:
 
     ```bash
-    git push -u origin feature/your-short-description
+    git push -u origin feature/yourstudentid-component
+    e.x git push -u origin feature/n12692107-donation
+    
     ```
 
 11. Before opening a pull request, merge the latest `dev` into your feature branch:
 
     ```bash
     git fetch origin
-    git switch feature/your-short-description
+    git switch feature/yourstudentid-component
     git merge origin/dev
     ```
 
@@ -106,5 +108,5 @@ See the complete beginner guide, including feature branches, merge conflict reso
     git push
     ```
 
-14. On GitHub, create a pull request from `feature/your-short-description` into `dev`. Do not push feature work directly to
+14. On GitHub, create a pull request from `feature/yourstudentid-component` into `dev`. Do not push feature work directly to
     `dev` unless the team explicitly requests it.
