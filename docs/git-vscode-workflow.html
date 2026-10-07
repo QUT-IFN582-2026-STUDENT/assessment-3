@@ -198,7 +198,7 @@ git config --global user.email</pre>
     <pre>
   cd "C:\Users\<yourUser>\IFN582"
   git clone https://github.com/QUT-IFN582-2026-STUDENT/assessment-3.git
-  cd ifn582-assessment-3</pre
+  cd assessment-3</pre
     >
     <p>Check that the repository is connected to GitHub:</p>
     <pre>
@@ -216,9 +216,8 @@ git status</pre
     <h2>3. Start from the latest dev branch</h2>
     <p>Run this whenever you begin work or before creating a new feature branch:</p>
     <pre>
-git fetch origin
-git switch dev
-git pull --ff-only origin dev</pre
+git pull
+</pre
     >
     <div class="warning">
       <strong>Do not skip this check:</strong>
@@ -237,7 +236,7 @@ git pull --ff-only origin dev</pre
       <code>fix/login-validation</code>
       :
     </p>
-    <pre>git switch -c feature/your-short-description</pre>
+    <pre>git checkout -b feature/your-short-description</pre>
     <p>
       This creates and switches to a
       <strong>local</strong>
@@ -289,7 +288,8 @@ git pull --ff-only origin dev</pre
     <p>Before committing, inspect what changed:</p>
     <pre>
 git status
-git diff</pre
+git add 'docs/myfile'
+</pre
     >
     <p>
       Run the project tests or start the application as required by the assessment. Then stage only the files that
