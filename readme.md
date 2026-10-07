@@ -45,21 +45,19 @@ See the complete beginner guide, including feature branches, merge conflict reso
    ```bash
    cd "C:\Users\<userName>\IFN582"
    git clone https://github.com/QUT-IFN582-2026-STUDENT/assessment-3.git
-   cd ifn582-assessment-3
+   cd assessment-3
    ```
 
 7. Start from the latest `dev` branch:
 
    ```bash
-   git fetch origin
-   git switch dev
-   git pull --ff-only origin dev
+   git pull
    ```
 
 8. Create a feature branch before making changes:
 
    ```bash
-   git switch -c feature/yourstudentid-component
+   git checkout -b feature/yourstudentid-component
    ```
 
 9. Make and test your code changes. Review and commit them:
@@ -78,7 +76,7 @@ See the complete beginner guide, including feature branches, merge conflict reso
     ```bash
     git push -u origin feature/yourstudentid-component
     e.x git push -u origin feature/n12692107-donation
-    
+
     ```
 
 11. Before opening a pull request, merge the latest `dev` into your feature branch:
