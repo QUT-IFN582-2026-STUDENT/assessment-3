@@ -13,12 +13,12 @@ python3 -m pip install -r requirements.txt
 
 ```bash
 username/password
-admin1/
-admin2/
-fundraiser1/
-fundraiser2/
-donor1/
-donor2/
+admin1/Password123!
+admin2/Password123!
+fundraiser1/Password123!
+fundraiser2/Password123!
+supporter1/Password123!
+supporter2/Password123!
 
 ```
 
