@@ -185,42 +185,42 @@ VALUES
 --   fundraiser1 (accounts 1): 3 active, 1 paused, 1 pending
 --   fundraiser2 (accounts 2): 3 active, 1 pending, 1 suspended
 --   pending / suspended are admin decisions and must NOT be changeable by the fundraiser
- INSERT INTO campaigns
+  INSERT INTO campaigns
 (orgId, title, goalAmount, amountRaised, status, location,
  eventDate, eventStartTime, eventEndTime,
  overview, description, bannerImageUrl, isFeatured,
  createdBy, createdDate, updatedDate, publishDate, eventType)
 VALUES
--- Brisbane - Next week Tue/Wed/Thu (3 events)
+-- Brisbane -  Fri/Sat/Sun (3 events)
 (1, 'Sound of OPM', 7000.00, 0.00, 'Active',
- '52 Costin St, Fortitude Valley QLD 4006','2026-10-13','2026-10-13 14:00:00','2026-10-13 17:00:00',
+ '52 Costin St, Fortitude Valley QLD 4006','2026-10-23','2026-10-23 14:00:00','2026-10-23 17:00:00',
  'A showcase of Filipino-Australian youth performers.',
  'Funds support stage hire, sound equipment, and youth workshops.',
  'img/clickerhappy-mic-1132528_1920.jpg', 1, 1, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY, 'Free'),
 (1, 'Brisbane Harmony Night', 9000.00, 0.00, 'Active',
- '7 Stratton St, Newstead QLD 4006','2026-10-15','2026-10-15 17:00:00','2026-10-15 21:00:00',
+ '7 Stratton St, Newstead QLD 4006','2026-10-25','2026-10-25 17:00:00','2026-10-25 21:00:00',
  'A multicultural music night celebrating community harmony.',
  'Funds support performers and venue accessibility.',
  'img/thukka-ai-generated-8309769_1920.jpg', 0, 1, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY, 'Free'),
 (1, 'Brisbane Folk Fusion', 6000.00, 0.00, 'Paused',
- '312 Brunswick St, Fortitude Valley QLD 4006','2026-10-14','2026-10-14 14:00:00','2026-10-14 21:00:00',
+ '312 Brunswick St, Fortitude Valley QLD 4006','2026-10-24','2026-10-24 14:00:00','2026-10-24 21:00:00',
  'A fusion of folk traditions from Southeast Asia.',
  'Funds support cultural instrument rentals and performers.',
  'img/dedy_timbul-gamelan-7852175_1920.jpg', 0, 1, NOW(), NOW(), NULL, 'Ticketed'),
--- Brisbane - Next month (2 events)
+-- Brisbane - This month (2 events)
 (1, 'Brisbane Rhythm Festival', 12000.00, 0.00, 'Active',
  'Grey St, South Brisbane QLD 4101',           -- QPAC Cultural Centre
- DATE_ADD(CURDATE(), INTERVAL 1 MONTH),
- DATE_ADD(NOW(), INTERVAL 1 MONTH),
- DATE_ADD(NOW(), INTERVAL 1 MONTH) + INTERVAL 4 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 1 WEEK),
+ DATE_ADD(NOW(), INTERVAL 1 WEEK),
+ DATE_ADD(NOW(), INTERVAL 1 WEEK) + INTERVAL 4 HOUR,
  'A festival of traditional and modern rhythms.',
  'Funds support festival logistics and youth participation.',
  'img/pexels-mark-gil-pineda.jpg', 1, 1, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY, 'Free'),
 (1, 'Brisbane Cultural Dance Night', 5000.00, 0.00, 'Pending',
  '480 Gregory Terrace, Bowen Hills QLD 4006',  -- The Old Museum
- DATE_ADD(CURDATE(), INTERVAL 1 MONTH),
- DATE_ADD(NOW(), INTERVAL 1 MONTH) + INTERVAL 2 HOUR,
- DATE_ADD(NOW(), INTERVAL 1 MONTH) + INTERVAL 5 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 1 WEEK),
+ DATE_ADD(NOW(), INTERVAL 1 WEEK) + INTERVAL 2 HOUR,
+ DATE_ADD(NOW(), INTERVAL 1 WEEK) + INTERVAL 5 HOUR,
  'A night of cultural dances from local communities.',
  'Funds support costumes, choreography, and venue hire.',
  'img/scratsmacker-outdoors-5159662_1920.jpg', 0, 1, NOW(), NOW(), NULL, 'Ticketed'),
@@ -253,12 +253,12 @@ VALUES
  'Funds support choir development and equipment.',
  'img/pexels-blue-ox-studio.jpg', 0, 2,
  NOW(), NOW(), NULL, 'Ticketed'),
--- Gold Coast - NEXT MONTH (Active)
+-- Gold Coast - NEXT WEEK (Active)
 (2, 'Gold Coast Cultural Festival', 15000.00, 0.00, 'Active',
  '165 Duringan St, Currumbin QLD 4223',          -- Soundlounge Currumbin
- DATE_ADD(CURDATE(), INTERVAL 1 MONTH),
- DATE_ADD(CURDATE(), INTERVAL 1 MONTH) + INTERVAL 18 HOUR,
- DATE_ADD(CURDATE(), INTERVAL 1 MONTH) + INTERVAL 22 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 1 WEEK),
+ DATE_ADD(CURDATE(), INTERVAL 1 WEEK) + INTERVAL 18 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 1 WEEK) + INTERVAL 22 HOUR,
  'A large-scale cultural festival.',
  'Funds support festival logistics and performers.',
  'img/pexels-gabriel-foureaux.jpg', 1, 2,
@@ -275,17 +275,17 @@ VALUES
  NOW(), NOW(), NULL, 'Ticketed'),
 -- Sunshine Coast - Next week Tue/Wed/Thu
 (1, 'Sunshine Coast Cultural Waves', 6000.00, 0.00, 'Active',
- '114 Sportsmans Parade, Bokarina QLD 4575','2026-10-14','2026-10-14 14:00:00','2026-10-14 21:00:00',
+ '114 Sportsmans Parade, Bokarina QLD 4575','2026-10-21','2026-10-21 14:00:00','2026-10-21 21:00:00',
  'A cultural music event by coastal communities.',
  'Funds support performers and youth workshops.',
  'img/pexels-vietfotos-18238104.jpg', 1, 2, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY, 'Free'),
 (2, 'Sunshine Coast Harmony Fest', 9000.00, 0.00, 'Active',
- '60 Noosa Dr, Noosa Heads QLD 4567','2026-10-13','2026-10-13 14:00:00','2026-10-13 21:00:00',
+ '60 Noosa Dr, Noosa Heads QLD 4567','2026-10-23','2026-10-23 14:00:00','2026-10-23 21:00:00',
  'A multicultural harmony festival.',
  'Funds support venue hire and performers.',
  'img/img/3935302-adult-3169948_1920.jpg', 0, 2, NOW(), NOW(), NOW(), 'Free'),
 (1, 'Sunshine Coast Heritage Night', 7000.00, 0.00, 'Pending',
- '20 Minchinton St, Caloundra QLD 4551','2026-10-15','2026-10-14 14:00:00','2026-10-14 21:00:00',
+ '20 Minchinton St, Caloundra QLD 4551','2026-10-25','2026-10-24 14:00:00','2026-10-24 21:00:00',
  'A night celebrating cultural heritage.',
  'Funds support cultural instruments and performers.',
  'img/pexels-diego-santos.jpg', 0, 2, NOW(), NOW(), NULL, 'Ticketed'),
