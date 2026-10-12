@@ -1,7 +1,10 @@
-{% extends 'base.html' %} {% block title %}Campaign Management | Culture Music
-{% endblock %} {% block main %}
-<main class="campaign-page">
-  <section class="campaign-hero text-white">
+{% extends 'base.html' %} {% block title %}Campaign Management{% endblock %} {%
+block main %}
+<div class="campaign-page">
+  <section
+    class="campaign-hero text-white"
+    style="background: url('{{ url_for('static', filename='img/clickerhappy-mic-1132528_1920.jpg') }}') center/cover;"
+  >
     <div class="container py-5">
       <div class="row">
         <div class="col-lg-8">
@@ -601,5 +604,5 @@ Highlighted name on donor wall, receive sponsor recognition, and four event tick
       </div>
     </div>
   </section>
-</main>
+</div>
 {% endblock %}
