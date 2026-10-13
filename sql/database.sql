@@ -31,6 +31,7 @@ CREATE TABLE accounts (
 	firstName VARCHAR(50) NOT NULL,
     lastName VARCHAR(50) NOT NULL,
     email         VARCHAR(120) NOT NULL UNIQUE,
+    phone         VARCHAR(20)  NULL,
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('Supporter', 'Fundraiser', 'Admin') NOT NULL DEFAULT 'Supporter',
 	accountStatus  ENUM('Active', 'Suspended', 'Closed') NOT NULL DEFAULT 'Active',
@@ -409,15 +410,15 @@ VALUES
 -- Posts for campaignid 2
 INSERT INTO posts ( campaignId, title, message, image_path, createdDate)
 VALUES
-(2, 'Venue Preparation Underway',
+(6, 'Venue Preparation Underway',
  'HOTA is being set up for an unforgettable Rinascita Sonora Night.',
  'img/pexels-violins-1838390_1920.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 5 DAY),
-(2, 'Artist Rehearsals',
+(6, 'Artist Rehearsals',
  'Our performers delivered an incredible rehearsal — the energy is unreal.',
  'img/yannazazu-orchestra-2098877_1920.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 2 DAY),
-(2, 'Final Technical Check',
+(6, 'Final Technical Check',
  'Sound and lighting checks are complete. Everything is ready for tonight!',
  'img/pexels-vietfotos-18238104.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 1 DAY);

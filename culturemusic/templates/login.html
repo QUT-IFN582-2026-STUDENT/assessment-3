@@ -9,12 +9,16 @@ title %}Login | Culture Music{% endblock %} {% block main %}
           <h1 class="section-title">Log in to Culture Music</h1>
           <p>Access your campaigns, donations, and event activity.</p>
 
-          {{ wtf.render_form(form) }}
+          <form method="post" action="{{ url_for('main.login') }}">
+            {{ form.hidden_tag() }}
+            {{ wtf.render_field(form.username) }}
+            {{ wtf.render_field(form.password) }}
+            {{ wtf.render_field(form.submit, class="btn btn-search") }}
+          </form>
 
           <p class="mt-4 mb-0">
             New to Culture Music?
-            <a href="{{ url_for('main.register') }}">Create an account</a>
-            .
+            <a href="{{ url_for('main.register') }}">Create an account</a>.
           </p>
         </article>
       </div>
