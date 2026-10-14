@@ -20,40 +20,39 @@ class RegisterForm(FlaskForm):
     # Organisation selection field with predefined choices: (id,name)
     organisation = SelectField(
         "Organisation",
-        choices=[
-            ("1", "Italian Cultural Group"),
-            ("2", "Pacific Arts Collective"),
-            ("3", "Pamana Filipino in Brisbane"),
-        ],
-        validators=[InputRequired()],
+        choices=[("", "No organisation")],
+        validators=[Optional()],
     )
     submit = SubmitField("Make Account")
 
-
-
 class DonationForm(FlaskForm):
-    donor_name = StringField('Full name', validators=[Optional()])
-    donor_email = StringField('Email address', validators=[InputRequired(), email()])
-    donor_phone = StringField('Phone number', validators=[Optional()])
-    donation_amount = IntegerField('Donation amount (AUD)', validators=[InputRequired(), NumberRange(min=1)])
+    donation_amount = IntegerField('Donation amount (AUD)', validators=[InputRequired(), NumberRange(min=1, max=99999999)])
     support_level = SelectField('Donor tier', choices=[], validators=[InputRequired()])
     donor_message = TextAreaField('Message', validators=[Optional()])
     anonymous_donation = BooleanField('Make my donation anonymous')
-    campaign_updates = BooleanField('Email me campaign updates')
-    donation_payment = SelectField('Payment Method', choices=[('Credit Card', 'Credit Card'), ('PayPal', 'PayPal'), ('Google Pay', 'Google Pay')], validators=[InputRequired()])
+    donation_payment = SelectField('Payment Method', choices=[('Credit Card', 'Credit Card'), ('Paypal', 'PayPal'), ('Google Pay', 'Google Pay')], validators=[InputRequired()])
     submit = SubmitField('Submit Donation')
 
-
-class TicketForm(FlaskForm):
-    ticket_name = StringField('Full name', validators=[InputRequired()])
-    ticket_email = StringField('Email address', validators=[InputRequired(), email()])
-    ticket_phone = StringField('Phone number', validators=[Optional()])
-    attendees = IntegerField('Number of attendees', default=1, validators=[InputRequired(), NumberRange(min=1)])
-    ticket_payment = SelectField('Method of payment', choices=[('Credit Card', 'Credit Card'), ('PayPal', 'PayPal'), ('Google Pay', 'Google Pay')], validators=[InputRequired()])
-    submit = SubmitField('Reserve Tickets')
-
 class ReportForm(FlaskForm):
-    report_type = SelectField('Report type', choices=[('Misleading information', 'Misleading information'), ('Inappropriate content', 'Inappropriate content'), ('Spam', 'Spam'), ('Other', 'Other')], validators=[InputRequired()])
+    report_type = SelectField('Report type', choices=[('Misleading information', 'Misleading information'), ('Inappropriate content', 'Inappropriate content'), ('Spam', 'Spam'), ('Fake News', 'Fake News'), ('Other', 'Other')], validators=[InputRequired()])
     submit = SubmitField('Submit report')
 
+class CampaignForm(FlaskForm):
+    title = StringField('Campaign title', validators=[InputRequired()])
+    overview = TextAreaField('Overview', validators=[InputRequired()])
+    description = TextAreaField('Description', validators=[InputRequired()])
+    location = StringField('Location', validators=[InputRequired()])
+    event_date = StringField('Event date', validators=[InputRequired()])
+    event_time = StringField('Event time', validators=[Optional()])
+    goal_amount = IntegerField('Fundraising goal', validators=[InputRequired(), NumberRange(min=1)])
+#    status = SelectField('Campaign status', choices=[
+#        ('Draft', 'Draft'), ('Pending', 'Pending'), ('Active', 'Active'),
+#        ('Paused', 'Paused'), ('Suspended', 'Suspended')
+#    ], validators=[InputRequired()])
+    submit = SubmitField('Submit')
+    
+class PostForm(FlaskForm):
+    title = StringField('Post title', validators=[InputRequired()])
+    message = TextAreaField('Update message', validators=[InputRequired()])
+    submit = SubmitField('Publish Update')
 

@@ -1,7 +1,17 @@
 {% extends 'base.html' %} {% block title %}{{ campaign.title }} {% endblock %}
 {% block main %}
-<main class="donation-page">
-  <section class="fundraiser-hero text-white">
+<div class="donation-page">
+  <section
+    class="fundraiser-hero text-white"
+    {%
+    if
+    campaign.banner_image_url
+    %}
+    style="background: linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.18)), url('{{ url_for('static', filename=campaign.banner_image_url) }}') center/cover;"
+    {%
+    endif
+    %}
+  >
     <div class="container py-5">
       <p
         class="text-uppercase fw-bold mb-2"
@@ -21,7 +31,7 @@
           <strong class="d-block">Event date</strong>
           {{ campaign.event_date }}
           <br />
-          {{ campaign.event_time }}
+          {{ campaign.event_time if campaign.event_time else '' }}
         </div>
         <div class="col-sm-4">
           <strong class="d-block">Location</strong>
@@ -61,6 +71,7 @@
 
           <article class="fundraiser-panel mb-4">
             <h2 class="section-title">Campaign posts</h2>
+            {% if posts %}
             <div class="row g-4 campaign-updates-grid">
               {% for post in posts %}
               <div class="col-md-6">
@@ -69,12 +80,17 @@
                     <summary aria-label="Report {{ post.title }} post">
                       &#8942;
                     </summary>
-                    <form class="report-form" action="#" method="post">
+                    <form
+                      class="report-form"
+                      action="{{ url_for('main.report_post', post_id=post.id) }}"
+                      method="post"
+                    >
+                      {{ report_form.csrf_token }}
                       <p class="report-form-title">Report this post</p>
                       <label>
                         <input
                           type="radio"
-                          name="report-type-{{ post.id }}"
+                          name="report_type"
                           value="Misleading information"
                           required
                         />
@@ -83,34 +99,37 @@
                       <label>
                         <input
                           type="radio"
-                          name="report-type-{{ post.id }}"
+                          name="report_type"
                           value="Inappropriate content"
                         />
                         Inappropriate content
                       </label>
                       <label>
-                        <input
-                          type="radio"
-                          name="report-type-{{ post.id }}"
-                          value="Spam"
-                        />
+                        <input type="radio" name="report_type" value="Spam" />
                         Spam
                       </label>
                       <label>
                         <input
                           type="radio"
-                          name="report-type-{{ post.id }}"
-                          value="Other"
+                          name="report_type"
+                          value="Fake News"
                         />
+                        Fake News
+                      </label>
+                      <label>
+                        <input type="radio" name="report_type" value="Other" />
                         Other
                       </label>
-                      <button class="btn btn-sm btn-search" type="submit">
+                      <button
+                        class="btn btn-sm btn-search disabled"
+                        type="submit"
+                      >
                         Submit report
                       </button>
                     </form>
                   </details>
                   <img
-                    src="{{ url_for('static', filename='img/' + post.image_url) }}"
+                    src="{{ url_for('static', filename=post.image_url) }}"
                     class="update-card-image"
                     alt="{{ post.title }}"
                   />
@@ -123,28 +142,40 @@
               </div>
               {% endfor %}
             </div>
+            {% else %}
+            <div class="alert alert-light border mt-3 mb-0" role="status">
+              No campaign updates posted.
+            </div>
+            {% endif %}
           </article>
         </div>
 
         <aside class="col-lg-4">
           <div class="d-flex flex-wrap gap-2 mb-4">
-            <details class="donation-details">
+            {% if current_account %}
+            <details
+              class="donation-details"
+              {%
+              if
+              show_donation_form
+              %}open{%
+              endif
+              %}
+            >
               <summary class="btn btn-search">Donate Now</summary>
               <article class="donation-panel mb-4" id="donation-form">
                 <h2 class="h3 mb-3">Make a donation</h2>
-                <form action="{{ url_for('main.donation') }}" method="post">
+                <p class="small text-muted">
+                  Donating as {{ current_account.first_name }} {{
+                  current_account.last_name }} ({{ current_account.email }}).
+                </p>
+                <form
+                  action="{{ url_for('main.donation', campaign_id=campaign.id) }}"
+                  method="post"
+                >
                   {{ donation_form.hidden_tag() }}
                   <input type="hidden" name="form_type" value="donation" />
-                  {{ donation_form.donor_name.label(class="form-label") }}{{
-                  donation_form.donor_name(class="form-control mb-3",
-                  autocomplete="name") }} {{
-                  donation_form.donor_email.label(class="form-label") }}{{
-                  donation_form.donor_email(class="form-control mb-3",
-                  autocomplete="email") }} {{
-                  donation_form.donor_phone.label(class="form-label") }}{{
-                  donation_form.donor_phone(class="form-control mb-3",
-                  autocomplete="tel") }} {{
-                  donation_form.donation_amount.label(class="form-label") }}
+                  {{ donation_form.donation_amount.label(class="form-label") }}
                   <div class="input-group mb-3">
                     <span class="input-group-text">$</span>
                     {{ donation_form.donation_amount(class="form-control",
@@ -162,12 +193,6 @@
                     donation_form.anonymous_donation.label(class="form-check-label")
                     }}
                   </div>
-                  <div class="form-check mb-4">
-                    {{ donation_form.campaign_updates(class="form-check-input")
-                    }} {{
-                    donation_form.campaign_updates.label(class="form-check-label")
-                    }}
-                  </div>
                   {{ donation_form.donation_payment.label(class="form-label")
                   }}{{ donation_form.donation_payment(class="form-select mb-4")
                   }} {{ donation_form.submit(class="btn btn-search w-100 py-2")
@@ -175,45 +200,11 @@
                 </form>
               </article>
             </details>
-            <details class="donation-details">
-              <summary class="btn btn-login">Buy Ticket</summary>
-              <article class="donation-panel mb-4" id="ticket-form">
-                <h2 class="h3 mb-3">Buy tickets</h2>
-                <p class="small text-muted">
-                  Reserve tickets for {{ campaign.title }}.
-                </p>
-                <form action="{{ url_for('main.donation') }}" method="post">
-                  {{ ticket_form.hidden_tag() }}
-                  <input type="hidden" name="form_type" value="ticket" />
-                  {{ ticket_form.ticket_name.label(class="form-label") }}{{
-                  ticket_form.ticket_name(class="form-control mb-3",
-                  autocomplete="name") }} {{
-                  ticket_form.ticket_email.label(class="form-label") }}{{
-                  ticket_form.ticket_email(class="form-control mb-3",
-                  autocomplete="email") }} {{
-                  ticket_form.ticket_phone.label(class="form-label") }}{{
-                  ticket_form.ticket_phone(class="form-control mb-3",
-                  autocomplete="tel") }}
-                  <label class="form-label" for="ticket-cost"
-                    >Ticket cost per person (AUD)</label
-                  >
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">$</span>
-                    <input
-                      class="form-control"
-                      id="ticket-cost"
-                      value="{{ '%.2f'|format(ticket_cost) }}"
-                      readonly
-                    />
-                  </div>
-                  {{ ticket_form.attendees.label(class="form-label") }}{{
-                  ticket_form.attendees(class="form-control mb-3", min="1") }}
-                  {{ ticket_form.ticket_payment.label(class="form-label") }}{{
-                  ticket_form.ticket_payment(class="form-select mb-4") }} {{
-                  ticket_form.submit(class="btn btn-search w-100 py-2") }}
-                </form>
-              </article>
-            </details>
+            {% else %}
+            <a class="btn btn-search" href="{{ url_for('main.login') }}">
+              Donate Now
+            </a>
+            {% endif %}
           </div>
           <article class="fundraiser-panel mb-4">
             <h2 class="section-title">Fundraising Progress</h2>
@@ -238,8 +229,7 @@
               </div>
             </div>
             <p class="small text-muted mb-0">
-              {{ campaign.supporter_count }} supporters · {{
-              campaign.visitor_count }} visitors
+              {{ campaign.supporter_count }} donations received
             </p>
           </article>
           <article class="fundraiser-panel mb-4">
@@ -272,5 +262,5 @@
       </div>
     </div>
   </section>
-</main>
+</div>
 {% endblock %}

@@ -254,7 +254,6 @@ body {
     Fundraiser Hero
     ======================================== */
 .fundraiser-hero {
-  background: url("../img/artesitalia-conductor-5157153_1920.jpg") center/cover;
   position: relative;
   min-height: 400px;
 }
@@ -809,12 +808,6 @@ body {
    ======================================== */
 .campaign-page {
   background-color: var(--bg-light);
-}
-
-.campaign-hero {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.52)),
-    url("../img/clickerhappy-mic-1132528_1920.jpg") center/cover;
 }
 
 .campaign-hero .badge,
