@@ -43,7 +43,7 @@
                    href="{{ url_for('main.index') }}">Home</a>
               </li>
               {# Campaign management is for fundraisers only #}
-              {% if session.get('logged_in') and session.get('role') == 'fundraiser' %}
+              {% if session.get('logged_in') and session.get('role') == 'Fundraiser' %}
               <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'main.campaign' %}active{% endif %}"
                    {% if request.endpoint == 'main.campaign' %}aria-current="page"{% endif %}
@@ -51,12 +51,12 @@
               </li>
               {% endif %}
               <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'main.donation' %}active{% endif %}"
-                   {% if request.endpoint == 'main.donation' %}aria-current="page"{% endif %}
-                   href="{{ url_for('main.donation') }}">Donation</a>
+                <a class="nav-link {% if request.endpoint == 'bp_donation.donation' %}active{% endif %}"
+                   {% if request.endpoint == 'bp_donation.donation' %}aria-current="page"{% endif %}
+                   href="{{ url_for('bp_donation.donation') }}">Donation</a>
               </li>
               {# Admin dashboard is for administrators only #}
-              {% if session.get('logged_in') and session.get('role') == 'admin' %}
+              {% if session.get('logged_in') and session.get('role') == 'Admin' %}
               <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'main.admin' %}active{% endif %}"
                    {% if request.endpoint == 'main.admin' %}aria-current="page"{% endif %}

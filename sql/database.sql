@@ -1,5 +1,5 @@
 -- WARNING: this script DROPS and recreates the tables, so any existing data in them is lost.
-
+DROP DATABASE IF EXISTS fundraising_db;
 CREATE DATABASE IF NOT EXISTS fundraising_db
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
@@ -20,7 +20,6 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE organisations (
     id   INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
-	orgType ENUM('Supporter', 'Fundraiser', 'Admin') NOT NULL DEFAULT 'Supporter',
 	description TEXT
 );
 
@@ -29,13 +28,13 @@ CREATE TABLE accounts (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     username      VARCHAR(50)  NOT NULL UNIQUE,
 	firstName VARCHAR(50) NOT NULL,
-    lastName VARCHAR(50) NOT NULL,
+    surName VARCHAR(50) NOT NULL,
     email         VARCHAR(120) NOT NULL UNIQUE,
     phone VARCHAR(20),
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('Supporter', 'Fundraiser', 'Admin') NOT NULL DEFAULT 'Supporter',
 	accountStatus  ENUM('Active', 'Suspended', 'Closed') NOT NULL DEFAULT 'Active',
-    orgId         INT NULL,
+    orgId         INT NOT NULL DEFAULT 4, -- Default to "Supporter" organisation
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (orgId) REFERENCES organisations(id)
 );
@@ -129,6 +128,8 @@ CREATE TABLE donations (
 
 -- Add trigger for donations
 DROP TRIGGER IF EXISTS trg_donation_insert;
+DROP TRIGGER IF EXISTS trg_donation_delete;
+
 CREATE TRIGGER trg_donation_insert AFTER INSERT ON donations
 FOR EACH ROW
     UPDATE campaigns
@@ -136,20 +137,27 @@ FOR EACH ROW
         updatedDate = NOW()
     WHERE id = NEW.campaignId;
 
+CREATE TRIGGER trg_donation_delete AFTER DELETE ON donations
+FOR EACH ROW
+    UPDATE campaigns
+     SET amountRaised = amountRaised - OLD.amount,
+        updatedDate = NOW()
+    WHERE id = OLD.campaignId;
+
 -- Insert records
 -- organisations
-INSERT INTO organisations (id, name, orgType, description) VALUES
-(1, 'Pamana in Brisbane', 'Fundraiser',
+INSERT INTO organisations (id, name, description) VALUES
+(1, 'Pamana in Brisbane',
  'Pamana in Brisbane is an Australian Filipino community driven cultural group dedicated to celebrating and preserving the rich musical, artistic, and traditional heritage of the Filipino people. Rooted in the meaning of pamana—“legacy” or “heritage”—the organisation brings together Filipino families, artists, musicians, dancers, and cultural advocates across Brisbane to showcase the vibrancy of Filipino culture.'),
-(2, 'Australian Multicultural Group','Fundraiser',
+(2, 'Australian Multicultural Group',
  'A community-led organisation promoting different culture and arts in Queensland.'),
-(3, 'Culture Music', 'Admin','Culture Music is a platform for cultural music fundraising events.'),
-(4, 'Supporter','Supporter', 'Event Supporter or Donor'),
-(5, 'Not Listed','Fundraiser', 'Organisation not listed');
+(3, 'Culture Music', 'Culture Music is a platform for cultural music fundraising events.'),
+(4, 'Supporter','Event Supporter or Donor'),
+(5, 'Not Listed','Organisation not listed');
 
 -- Every accounts below has the password:  Password123!
 -- accounts: 3 fundraisers (to prove ownership rules), 5 supporter, 2 admin
-INSERT INTO accounts (id, username, firstName, lastName, email, password_hash, role, accountStatus, orgId)
+INSERT INTO accounts (id, username, firstName, surName, email, password_hash, role, accountStatus, orgId)
 VALUES
 (1,'fundraiser1','Olivia','Brown','fundraiser1@example.com',
  'scrypt:32768:8:1$XZOcvuCl3CHtkmHC$cafb9fa4fd7704fba3b8e3fff498da9977dd98e7f5babb930bdfcc6600511538b783736ae9ac3b374364389b2ae97db3f1bf4f2b8bbe347442d284bbceedcf12',

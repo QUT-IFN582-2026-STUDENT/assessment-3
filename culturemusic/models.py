@@ -3,7 +3,6 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional
 
-
 class CampaignStatusEnum(Enum):
     DRAFT = 'Draft'
     PENDING = 'Pending'
@@ -13,6 +12,58 @@ class CampaignStatusEnum(Enum):
     REJECTED = 'Rejected'
     CLOSED = 'Closed'
 
+    def __str__(self):
+        return self.value
+
+class AccountRole(Enum):
+    SUPPORTER = 'Supporter'
+    FUNDRAISER = 'Fundraiser'
+    ADMIN = 'Admin'
+
+    def __str__(self):
+        return self.value
+
+class AccountStatus(Enum):
+    ACTIVE = 'Active'
+    SUSPENDED = 'Suspended'
+    CLOSED = 'Closed'
+
+    def __str__(self):
+        return self.value
+
+class CampaignEventType(Enum):
+    FREE = 'Free'
+    TICKETED = 'Ticketed'
+
+    def __str__(self):
+        return self.value
+
+class ReportType(Enum):
+    MISLEADING_INFORMATION = 'Misleading information'
+    INAPPROPRIATE_CONTENT = 'Inappropriate content'
+    SPAM = 'Spam'
+    FAKE_NEWS = 'Fake News'
+    OTHER = 'Other'
+
+    def __str__(self):
+        return self.value
+
+class ReportStatus(Enum):
+    FOR_REVIEW = 'For Review'
+    ACTION_TAKEN = 'Action Taken'
+    NO_ACTION = 'No Action'
+
+    def __str__(self):
+        return self.value
+
+class DonationPaymentType(Enum):
+    CREDIT_CARD = 'Credit Card'
+    PAYPAL = 'Paypal'
+    GOOGLE_PAY = 'Google Pay'
+
+    def __str__(self):
+        return self.value
+
 
 @dataclass
 class UserInfo:
@@ -21,7 +72,10 @@ class UserInfo:
     surname: str
     email: str
     phone: str
-    organisation: str = ''
+    organisation: Optional['Organisation'] = None
+    account_status: AccountStatus = AccountStatus.ACTIVE
+    role: AccountRole = AccountRole.SUPPORTER
+    created_date: str = ''
 
 
 @dataclass
@@ -30,9 +84,8 @@ class UserAccount:
     role: 'admin' | 'fundraiser' | 'supporter'"""
     username: str
     password: str
-    email: str
     info: UserInfo
-    role: str = 'supporter'
+
 
 
 @dataclass
@@ -40,7 +93,7 @@ class Organisation:
     id: int
     name: str
     description: str
-    logo_url: str = ''
+    logo_url: str
 
 
 @dataclass
@@ -48,7 +101,8 @@ class Tier:
     id: int
     name: str
     amount: float
-    benefits: str
+    campaign: Optional['Campaign'] = None
+    benefits: str = ''
 
 
 _FUNDRAISER_ALLOWED_TRANSITIONS = {
@@ -71,10 +125,10 @@ class Campaign:
     _event_end_time: datetime
     _overview: str
     _description: str
-    _banner_image_url: str
+    _banner_image_url: str 
     _created_by: UserAccount
     _organisation: Organisation
-    _event_type: str = ''
+    _event_type: CampaignEventType = CampaignEventType.FREE
     _is_featured: bool = False
     _tiers: List[Tier] = field(default_factory=list)
     _created_date: datetime = field(default_factory=datetime.now)
@@ -82,6 +136,7 @@ class Campaign:
     _publish_date: Optional[datetime] = None
     supporter_count: int = 0
     visitor_count: int = 0
+
 
     # ---- Properties ----
 
@@ -182,7 +237,7 @@ class Campaign:
         return self._organisation
 
     @property
-    def event_type(self) -> str:
+    def event_type(self) -> CampaignEventType:
         return self._event_type
 
     @property
@@ -261,11 +316,6 @@ class Campaign:
         self._touch()
         return True
 
-    def delete(self) -> bool:
-        self._status = CampaignStatusEnum.CLOSED
-        self._touch()
-        return True
-
     def changeStatus(self, status: CampaignStatusEnum, actor_role: str = 'fundraiser') -> bool:
         if actor_role == 'admin':
             self._status = status
@@ -278,14 +328,16 @@ class Campaign:
         self._touch()
         return True
 
-    def submitForReview(self) -> 'Campaign':
-        if self._status == CampaignStatusEnum.DRAFT:
-            self._status = CampaignStatusEnum.PENDING
-            self._touch()
-        return self
-
     def _touch(self) -> None:
         self._updated_date = datetime.now()
+
+    @property
+    def event_time(self):
+        return ' - '.join(
+            value.strftime('%I:%M %p').lstrip('0').lower()
+            for value in (self.event_start_time, self.event_end_time)
+            if value
+        )
 
 
 @dataclass
@@ -293,48 +345,32 @@ class Post:
     id: int
     title: str
     message: str
-    image_url: str
-    created_date: str
-
-
-@dataclass
-class Customer:
-    name: str
-    amount: float
-    message: str
+    campaign: Optional[Campaign] = None
+    image_url: str = ''
+    created_date: str = ''
 
 
 @dataclass
 class Donation:
     id: int
     amount: float
-    donor_name: str
-    email: str
-    phone: str
-    message: str
-    tier: str
-    payment_type: str
+    account: Optional[UserInfo] = None
+    campaign: Optional[Campaign] = None
+    tier: Optional[Tier] = None
+    notes: str = ''
+    receipt_id: str = ''
+    payment_type: DonationPaymentType = DonationPaymentType.CREDIT_CARD
     is_anonymous: bool = False
+    created_date: str = ''
 
-
-@dataclass
-class Purchase:
-    id: int
-    name: str
-    email: str
-    phone: str
-    ticket_cost: float
-    attendees: int
-    payment_type: str
-
-    @property
-    def total_cost(self):
-        return self.ticket_cost * self.attendees
 
 
 @dataclass
 class Report:
     id: int
-    post_id: int
-    report_type: str
-    status: str = 'ForReview'
+    post: Optional[Post] = None
+    post_id: int = 0
+    report_type: ReportType = ReportType.OTHER
+    report_status: ReportStatus = ReportStatus.FOR_REVIEW
+    created_date: str = ''
+    reviewed_by: Optional[UserInfo] = None

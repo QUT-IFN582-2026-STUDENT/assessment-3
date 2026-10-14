@@ -13,6 +13,9 @@
 
           <form method="post" action="{{ url_for('main.login') }}" novalidate>
             {{ form.hidden_tag() }}
+            {% if request.args.get('next') %}
+            <input type="hidden" name="next" value="{{ request.args.get('next') }}" />
+            {% endif %}
             {% for field in form if field.widget.input_type != 'hidden' and field.type != 'SubmitField' %}
               {{ render_field(field) }}
             {% endfor %}

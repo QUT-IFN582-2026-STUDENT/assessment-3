@@ -1,12 +1,14 @@
-from . import mysql
+from . import db, mysql
 import MySQLdb
 
-from werkzeug.security import generate_password_hash, check_password_hash
+from .models import (
+    Campaign, CampaignEventType, CampaignStatusEnum,
+    Organisation, Tier, UserAccount,
+)
 
 # Statuses a fundraiser is allowed to switch between.
 # pending / rejected / suspended belong to administrators.
 FUNDRAISER_STATUSES = ('active', 'paused', 'closed')
-ALL_STATUSES = ('pending', 'active', 'paused', 'closed', 'rejected', 'suspended')
 
 # UML column
 CAMPAIGN_COLUMNS = """
@@ -61,45 +63,19 @@ def execute(sql, params=()):
         cur.close()
 
 
-# ---------------------------------------------------------------------------
-# Accounts / authentication  (table: account)
-# ---------------------------------------------------------------------------
-def add_user(username, email, password, role='supporter'):
-    execute(
-        'INSERT INTO account (username, email, password_hash, role) VALUES (%s, %s, %s, %s)',
-        (username, email, generate_password_hash(password), role),
-    )
-
-
-def username_exists(username, email):
-    """Check by username/email only (not password) for the 'already registered' test."""
-    return query(
-        'SELECT 1 AS found FROM account WHERE username = %s OR email = %s',
-        (username, email), one=True,
-    ) is not None
-
-
-def check_for_user(username, password):
-    """Return the account dict if the credentials are valid, otherwise None."""
-    user = query('SELECT * FROM account WHERE username = %s', (username,), one=True)
-    if user and check_password_hash(user['password_hash'], password):
-        return user
-    return None
-
-
 def _ensure_organisation(account_id):
     """
     Campaign.orgId is required. Use the account's organisation, or create one named
     after the account the first time that fundraiser creates a campaign.
     """
-    account = query('SELECT username, orgId FROM account WHERE id = %s',
+    account = query('SELECT username, orgId FROM accounts WHERE id = %s',
                     (account_id,), one=True)
     if account is None:
         return None
     if account['orgId']:
         return account['orgId']
-    _, org_id = execute('INSERT INTO organisation (name) VALUES (%s)', (account['username'],))
-    execute('UPDATE account SET orgId = %s WHERE id = %s', (org_id, account_id))
+    _, org_id = execute('INSERT INTO organisations (name) VALUES (%s)', (account['username'],))
+    execute('UPDATE accounts SET orgId = %s WHERE id = %s', (org_id, account_id))
     return org_id
 
 
@@ -111,8 +87,8 @@ def get_owned_campaigns(fundraiser_id):
         f"""
         SELECT {CAMPAIGN_COLUMNS}, COUNT(d.id) AS donor_count
         FROM campaigns c
-        JOIN organisation o ON o.id = c.orgId
-        LEFT JOIN donations d ON d.campaign_id = c.id
+        JOIN organisations o ON o.id = c.orgId
+        LEFT JOIN donations d ON d.campaignId = c.id
         WHERE c.createdBy = %s
         GROUP BY c.id, o.name
         ORDER BY c.createdDate DESC, c.id DESC
@@ -127,8 +103,8 @@ def get_campaign_for_owner(campaign_id, fundraiser_id):
         f"""
         SELECT {CAMPAIGN_COLUMNS}, COUNT(d.id) AS donor_count
         FROM campaigns c
-        JOIN organisation o ON o.id = c.orgId
-        LEFT JOIN donations d ON d.campaign_id = c.id
+        JOIN organisations o ON o.id = c.orgId
+        LEFT JOIN donations d ON d.campaignId = c.id
         WHERE c.id = %s AND c.createdBy = %s
         GROUP BY c.id, o.name
         """,
@@ -215,30 +191,11 @@ def delete_campaign(campaign_id, fundraiser_id):
         """
         DELETE FROM campaigns
         WHERE id = %s AND createdBy = %s
-          AND NOT EXISTS (SELECT 1 FROM donations d WHERE d.campaign_id = campaigns.id)
+          AND NOT EXISTS (SELECT 1 FROM donations d WHERE d.campaignId = campaigns.id)
         """,
         (campaign_id, fundraiser_id),
     )
     return deleted == 1
-
-
-# Used by the administrator dashboard only (not by fundraisers):
-def admin_set_status(campaign_id, new_status):
-    """Approve / reject / suspend etc. Approving for the first time sets publishDate."""
-    if new_status not in ALL_STATUSES:
-        return False
-    matched, _ = execute(
-        """
-        UPDATE campaigns
-        SET status = %s,
-            publishDate = CASE WHEN %s = 'active' AND publishDate IS NULL
-                               THEN NOW() ELSE publishDate END
-        WHERE id = %s
-        """,
-        (new_status, new_status, campaign_id),
-    )
-    return matched == 1
-
 
 
 # Tiers (table: tiers; ownership checked through the parent campaign)
@@ -268,13 +225,97 @@ def get_public_tiers(campaign_id):
     )
 
 
+def get_public_campaign(campaign_id=None):
+    """Return an active campaign with its organisation, creator, and donor tiers."""
+    campaign_filter = 'AND c.id = %s' if campaign_id is not None else ''
+    params = (campaign_id,) if campaign_id is not None else ()
+    row = query(
+        f"""
+        SELECT c.id, c.title, c.goalAmount AS goal_amount,
+               c.amountRaised AS amount_raised, c.status, c.location,
+               c.eventDate AS event_date, c.eventStartTime AS event_start_time,
+               c.eventEndTime AS event_end_time, c.overview, c.description,
+               c.bannerImageUrl AS banner_image_url, c.isFeatured AS is_featured,
+               c.createdDate AS created_date, c.updatedDate AS updated_date,
+               c.publishDate AS publish_date, c.eventType AS event_type,
+               (SELECT COUNT(*) FROM donations d
+                WHERE d.campaignId = c.id) AS supporter_count,
+               o.id AS organisation_id, o.name AS organisation_name,
+               o.description AS organisation_description,
+               a.id AS creator_id, a.username AS creator_username,
+               a.firstName AS creator_firstname, a.surName AS creator_surname,
+               a.email AS creator_email, a.phone AS creator_phone,
+               a.role AS creator_role, a.accountStatus AS creator_account_status,
+               a.created_at AS creator_created_at,
+               creator_org.id AS creator_org_id,
+               creator_org.name AS creator_org_name,
+               creator_org.description AS creator_org_description
+        FROM campaigns c
+        JOIN organisations o ON o.id = c.orgId
+        JOIN accounts a ON a.id = c.createdBy
+        LEFT JOIN organisations creator_org ON creator_org.id = a.orgId
+        WHERE c.status = 'Active' {campaign_filter}
+        ORDER BY c.isFeatured DESC, c.publishDate DESC, c.id DESC
+        LIMIT 1
+        """,
+        params,
+        one=True,
+    )
+    if row is None:
+        return None
+
+    organisation = Organisation(
+        id=row['organisation_id'],
+        name=row['organisation_name'],
+        description=row['organisation_description'] or '',
+        logo_url='',
+    )
+    creator_info = db._user_info_from_row(row, 'creator')
+    tiers = [
+        Tier(
+            id=tier['id'],
+            name=tier['name'],
+            amount=float(tier['amount']),
+            benefits=tier['benefits'],
+        )
+        for tier in get_public_tiers(row['id'])
+    ]
+    return Campaign(
+        _id=row['id'],
+        _title=row['title'],
+        _goal_amount=float(row['goal_amount']),
+        _amount_raised=float(row['amount_raised']),
+        _status=CampaignStatusEnum(row['status']),
+        _location=row['location'],
+        _event_date=row['event_date'],
+        _event_start_time=row['event_start_time'],
+        _event_end_time=row['event_end_time'],
+        _overview=row['overview'],
+        _description=row['description'],
+        _banner_image_url=row['banner_image_url'] or '',
+        _created_by=UserAccount(
+            username=row['creator_username'],
+            password='',
+            info=creator_info,
+        ),
+        _organisation=organisation,
+        _event_type=CampaignEventType(row['event_type']),
+        _is_featured=bool(row['is_featured']),
+        _tiers=tiers,
+        _created_date=row['created_date'],
+        _updated_date=row['updated_date'],
+        _publish_date=row['publish_date'],
+        supporter_count=row['supporter_count'],
+    )
+
+
 def replace_tiers(campaign_id, fundraiser_id, tiers):
     """
     Save the full list of tiers for a campaign in one transaction (old ones are
     replaced). Returns False, changing nothing, unless the fundraiser created it.
     tiers: list of {'name': str, 'amount': Decimal/number, 'benefits': str}
     """
-    db = get_db()
+    db = mysql.connection
     cur = db.cursor()
     try:
         cur.execute('SELECT 1 FROM campaigns WHERE id = %s AND createdBy = %s',
@@ -304,9 +345,9 @@ def get_posts(campaign_id, fundraiser_id):
         """
         SELECT p.*
         FROM posts p
-        JOIN campaigns c ON c.id = p.campaign_id
-        WHERE p.campaign_id = %s AND c.createdBy = %s
-        ORDER BY p.created_at DESC
+        JOIN campaigns c ON c.id = p.campaignId
+        WHERE p.campaignId = %s AND c.createdBy = %s
+        ORDER BY p.createdDate DESC
         """,
         (campaign_id, fundraiser_id),
     )
@@ -316,7 +357,7 @@ def add_post(campaign_id, fundraiser_id, title, message, image_path=''):
     """INSERT ... SELECT inserts nothing unless the campaign belongs to the fundraiser."""
     inserted, _ = execute(
         """
-        INSERT INTO posts (campaign_id, title, message, image_path)
+        INSERT INTO posts (campaignId, title, message, image_path)
         SELECT c.id, %s, %s, %s
         FROM campaigns c
         WHERE c.id = %s AND c.createdBy = %s
@@ -330,7 +371,7 @@ def update_post(post_id, fundraiser_id, title, message):
     matched, _ = execute(
         """
         UPDATE posts p
-        JOIN campaigns c ON c.id = p.campaign_id
+        JOIN campaigns c ON c.id = p.campaignId
         SET p.title = %s, p.message = %s
         WHERE p.id = %s AND c.createdBy = %s
         """,
@@ -343,7 +384,7 @@ def delete_post(post_id, fundraiser_id):
     deleted, _ = execute(
         """
         DELETE p FROM posts p
-        JOIN campaigns c ON c.id = p.campaign_id
+        JOIN campaigns c ON c.id = p.campaignId
         WHERE p.id = %s AND c.createdBy = %s
         """,
         (post_id, fundraiser_id),
@@ -358,11 +399,17 @@ def get_donations(campaign_id, fundraiser_id):
     """Donation history for a campaign this fundraiser created, newest first."""
     return query(
         """
-        SELECT d.*
+        SELECT d.id, d.amount, d.createdDate AS created_at,
+               d.notes AS message, d.isAnonymous AS is_anonymous,
+               t.name AS tier_name,
+               CASE WHEN d.isAnonymous = 1 THEN 'Anonymous Supporter'
+                    ELSE CONCAT_WS(' ', a.firstName, a.surName) END AS donor_name
         FROM donations d
-        JOIN campaigns c ON c.id = d.campaign_id
-        WHERE d.campaign_id = %s AND c.createdBy = %s
-        ORDER BY d.created_at DESC
+        JOIN campaigns c ON c.id = d.campaignId
+        LEFT JOIN accounts a ON a.id = d.accountId
+        LEFT JOIN tiers t ON t.id = d.tierId
+        WHERE d.campaignId = %s AND c.createdBy = %s
+        ORDER BY d.createdDate DESC, d.id DESC
         """,
         (campaign_id, fundraiser_id),
     )
@@ -377,9 +424,9 @@ def get_campaign_stats(campaign_id, fundraiser_id):
                COUNT(d.id)                 AS donor_count,
                COALESCE(AVG(d.amount), 0)  AS average,
                COALESCE(MAX(d.amount), 0)  AS largest,
-               MAX(d.created_at)           AS last_donation
+               MAX(d.createdDate)           AS last_donation
         FROM campaigns c
-        LEFT JOIN donations d ON d.campaign_id = c.id
+        LEFT JOIN donations d ON d.campaignId = c.id
         WHERE c.id = %s AND c.createdBy = %s
         GROUP BY c.id
         """,
@@ -408,13 +455,13 @@ def get_donations_by_day(campaign_id, fundraiser_id):
     """Daily totals, handy for a chart of donations over time."""
     return query(
         """
-        SELECT DATE(d.created_at) AS day,
+        SELECT DATE(d.createdDate) AS day,
                SUM(d.amount)      AS total,
                COUNT(*)           AS donations
         FROM donations d
-        JOIN campaigns c ON c.id = d.campaign_id
-        WHERE d.campaign_id = %s AND c.createdBy = %s
-        GROUP BY DATE(d.created_at)
+        JOIN campaigns c ON c.id = d.campaignId
+        WHERE d.campaignId = %s AND c.createdBy = %s
+        GROUP BY DATE(d.createdDate)
         ORDER BY day
         """,
         (campaign_id, fundraiser_id),

@@ -1,14 +1,173 @@
 from datetime import date, datetime
+from . import mysql
+import MySQLdb
 from .models import (
-    Campaign, CampaignStatusEnum, Customer, Donation, Organisation, Post,
-    Purchase, Report, Tier, UserAccount, UserInfo,
+    AccountRole, AccountStatus, Campaign, CampaignStatusEnum, Organisation, Tier,
+    UserAccount, UserInfo,
 )
+from werkzeug.security import check_password_hash, generate_password_hash
 
+
+def add_user(form):
+    """Create an account from validated registration form data."""
+    role = AccountRole.SUPPORTER
+    organisation_id = int(form.organisation.data)
+    if organisation_id != 4:
+        role = AccountRole.FUNDRAISER
+
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            """
+            INSERT INTO accounts
+                (username, password_hash, email, firstName, surName, phone, role, orgId)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                form.username.data,
+                generate_password_hash(form.password.data),
+                form.email.data,
+                form.firstname.data,
+                form.surname.data,
+                form.phone.data,
+                role.value,
+                organisation_id,
+            ),
+        )
+        mysql.connection.commit()
+    except MySQLdb.Error:
+        mysql.connection.rollback()
+        raise
+    finally:
+        cursor.close()
+
+
+def username_exists(username, email):
+    """Check by username/email only for the already-registered test."""
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            'SELECT 1 AS found FROM accounts WHERE username = %s OR email = %s',
+            (username, email),
+        )
+        return cursor.fetchone() is not None
+    finally:
+        cursor.close()
+
+
+def check_for_user(username, password):
+    """Return the account dict if credentials are valid, otherwise None."""
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            'SELECT * FROM accounts WHERE username = %s',
+            (username,),
+        )
+        user = cursor.fetchone()
+    finally:
+        cursor.close()
+
+    if user and check_password_hash(user['password_hash'], password):
+        return user
+    return None
+
+
+def _user_info_from_row(row, prefix='account'):
+    account_id = row.get(f'{prefix}_id')
+    if account_id is None:
+        return None
+
+    organisation_id = row.get(f'{prefix}_org_id')
+    organisation = None
+    if organisation_id is not None:
+        organisation = Organisation(
+            id=organisation_id,
+            name=row[f'{prefix}_org_name'],
+            description=row.get(f'{prefix}_org_description') or '',
+            logo_url='',
+        )
+
+    return UserInfo(
+        id=str(account_id),
+        firstname=row.get(f'{prefix}_firstname') or '',
+        surname=row.get(f'{prefix}_surname') or '',
+        email=row.get(f'{prefix}_email') or '',
+        phone=row.get(f'{prefix}_phone') or '',
+        organisation=organisation,
+        account_status=AccountStatus(row[f'{prefix}_account_status']),
+        role=AccountRole(row[f'{prefix}_role']),
+        created_date=str(row.get(f'{prefix}_created_at') or ''),
+    )
+
+
+def get_account_info(account_id):
+    """Load a registered account's UserInfo from the accounts table."""
+    if account_id is None:
+        return None
+
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT a.id AS account_id, a.firstName AS account_firstname,
+                   a.surName AS account_surname, a.email AS account_email,
+                   a.phone AS account_phone, a.role AS account_role,
+                   a.accountStatus AS account_account_status,
+                   a.created_at AS account_created_at,
+                   o.id AS account_org_id, o.name AS account_org_name,
+                   o.description AS account_org_description
+            FROM accounts a
+            LEFT JOIN organisations o ON o.id = a.orgId
+            WHERE a.id = %s
+            """,
+            (account_id,),
+        )
+        row = cursor.fetchone()
+    finally:
+        cursor.close()
+
+    return _user_info_from_row(row) if row else None
+
+
+def get_organisations() -> list[Organisation]:
+    """Return organisations available for account registration."""
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT id, name, description
+            FROM organisations
+            WHERE LOWER(name) <> 'culture music'
+            ORDER BY CASE WHEN LOWER(name) = 'not listed' THEN 1 ELSE 0 END,
+                     name
+            """
+        )
+        results = cursor.fetchall()
+    finally:
+        cursor.close()
+    return [
+        Organisation(
+            id=row['id'],
+            name=row['name'],
+            description=row['description'] or '',
+            logo_url='',
+        )
+        for row in results
+    ]
 
 Users = [
-    UserAccount('admin', 'admin', 'foobar@mail.com',
-                UserInfo('1', 'Admin', 'User', 'foobar@mail.com', '1234567890'),
-                role='admin'),
+    UserAccount(
+        username='admin',
+        password='admin',
+        info=UserInfo(
+            id='1',
+            firstname='Admin',
+            surname='User',
+            email='foobar@mail.com',
+            phone='1234567890',
+            role=AccountRole.ADMIN,
+        ),
+    ),
 ]
 
 ItalianCulturalGroup = Organisation(
@@ -48,112 +207,3 @@ Campaigns[0].supporter_count = 128
 Campaigns[0].visitor_count = 2846
 Campaigns[0].calculateAmountRaised([])  # placeholder; set directly below for sample data
 Campaigns[0]._amount_raised = 32500.00
-
-Posts = [
-    Post(1, 'Local artists confirmed', 'Six local artists have joined the programme and will perform at Rinascita Sonora.', 'pexels-violins-1838390_1920.jpg', '10 August 2026'),
-    Post(2, 'Community rehearsal day', 'Performers and volunteers gathered to prepare the event and connect with the community.', 'yannazazu-orchestra-2098877_1920.jpg', '23 August 2026'),
-]
-
-Customers = [
-    Customer('Amelia F.', 200, 'Keep the music playing!'),
-    Customer('Anonymous Supporter', 100, 'For our community artists.'),
-    Customer('Daniel K.', 50, "Can't wait for the festival."),
-    Customer('Sophia M.', 500, 'Celebrating Italian music and culture.'),
-]
-
-Donations = []
-Purchases = []
-Reports = []
-
-
-def check_for_user(username, password):
-    for user in Users:
-        if user.username == username and user.password == password:
-            return user
-    return None
-
-
-def add_user(form):
-    Users.append(
-        UserAccount(form.username.data, form.password.data, form.email.data,
-            UserInfo(f'U{len(Users)}',
-                     form.firstname.data, form.surname.data,
-                     form.email.data, form.phone.data,
-                     form.organisation.data),
-            role='supporter',
-        )
-    )
-
-
-def get_campaign(campaign_id=1):
-    return next((c for c in Campaigns if c.id == int(campaign_id)), Campaigns[0])
-
-
-def get_all_campaigns():
-    return Campaigns
-
-
-def get_campaigns_by_owner(username):
-    return [c for c in Campaigns if c.created_by.username == username]
-
-
-def add_campaign(campaign):
-    Campaigns.append(campaign)
-    return campaign
-
-
-def update_campaign(campaign_id, **fields):
-    campaign = get_campaign(campaign_id)
-    campaign.update(**fields)
-    return campaign
-
-
-def update_campaign_status(campaign_id, status: CampaignStatusEnum, actor_role='fundraiser'):
-    campaign = get_campaign(campaign_id)
-    return campaign.changeStatus(status, actor_role=actor_role)
-
-
-def set_featured(campaign_id, featured: bool):
-    """Admin-only: directly flips is_featured on the campaign. There is no
-    public setter on Campaign for this — only the admin dashboard route
-    should call this db function."""
-    campaign = get_campaign(campaign_id)
-    campaign._is_featured = featured
-    campaign._touch()
-    return campaign
-
-
-def get_posts(campaign_id=1):
-    return Posts
-
-
-def add_post(post):
-    Posts.append(post)
-    return post
-
-
-def get_customers(campaign_id=1):
-    return Customers
-
-
-def get_donations(campaign_id=1):
-    return Donations
-
-
-def add_donation(donation):
-    Donations.append(donation)
-    campaign = get_campaign()
-    campaign._amount_raised += donation.amount
-    campaign.supporter_count += 1
-    Customers.insert(0, Customer(
-        donation.donor_name if not donation.is_anonymous else 'Anonymous Supporter',
-        donation.amount, donation.message,
-    ))
-
-
-def add_purchase(purchase):
-    Purchases.append(purchase)
-
-
-def add_report(report):
-    Reports.append(report)

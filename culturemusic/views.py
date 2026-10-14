@@ -5,18 +5,16 @@ import uuid
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from functools import wraps
+from urllib.parse import urlparse
 
 from flask import Blueprint, render_template, request, session, flash, abort, current_app, Response
 from flask import redirect, url_for
 from werkzeug.utils import secure_filename
+from . import db
 from . import db_campaign as cm
 
-from .db import (
-    add_donation, add_purchase, add_report, get_campaign, get_customers,
-    get_posts as get_public_posts,
-)
-from .models import Donation, Purchase, Report
-from .forms import DonationForm, LoginForm, RegisterForm, TicketForm, CampaignForm, PostForm
+from .models import AccountRole
+from .forms import LoginForm, RegisterForm, CampaignForm, PostForm
 
 
 bp = Blueprint('main', __name__)
@@ -26,7 +24,6 @@ ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 
 # Access control
-
 def fundraiser_required(view):
     """Only an authenticated fundraiser may open the decorated page."""
     @wraps(view)
@@ -34,14 +31,14 @@ def fundraiser_required(view):
         if not session.get('logged_in'):
             flash('Please log in as a fundraiser to manage campaigns.', 'error')
             return redirect(url_for('main.login'))
-        if session.get('role') != 'fundraiser':
+        if session.get('role') != AccountRole.FUNDRAISER.value:
             flash('Only fundraisers can access campaign management.', 'error')
             return redirect(url_for('main.index'))
         return view(*args, **kwargs)
     return wrapped
 
 
-def save_image(file_storage):
+def save_image(file_storage, directory='uploads'):
     """Save an uploaded image and return its web path, or '' if there is none."""
     if not file_storage or not file_storage.filename:
         return ''
@@ -50,10 +47,10 @@ def save_image(file_storage):
     if extension not in ALLOWED_IMAGE_EXTENSIONS:
         raise ValueError('Images must be PNG, JPG, GIF or WebP files.')
     unique_name = f'{uuid.uuid4().hex}.{extension}'
-    folder = os.path.join(current_app.static_folder, 'uploads')
+    folder = os.path.join(current_app.static_folder, directory)
     os.makedirs(folder, exist_ok=True)
     file_storage.save(os.path.join(folder, unique_name))
-    return f'uploads/{unique_name}'
+    return f'{directory}/{unique_name}'
 
 
 def read_campaign_extras(prefix):
@@ -72,10 +69,7 @@ def read_campaign_extras(prefix):
     if start and end and end <= start:
         raise ValueError('The event must end after it starts.')
 
-    event_type = request.form.get(f'{prefix}-event_type', '').strip() or None
-    if event_type and len(event_type) > 50:
-        raise ValueError('Event type must be 50 characters or fewer.')
-    return start, end, event_type
+    return start, end
 
 
 def check_campaign_lengths(form):
@@ -185,6 +179,7 @@ def campaign():
         campaign_form.location.data = selected['location']
         campaign_form.goal_amount.data = selected['goal_amount']
         campaign_form.event_date.data = selected['event_date']
+        campaign_form.event_type.data = selected['event_type']
 
     form_type = request.form.get('form_type') if request.method == 'POST' else None
 
@@ -193,9 +188,9 @@ def campaign():
         if new_form.validate_on_submit():
             try:
                 check_campaign_lengths(new_form)
-                start, end, event_type = read_campaign_extras('new')
+                start, end = read_campaign_extras('new')
                 tiers = read_tiers('new')
-                banner = save_image(request.files.get('new-banner'))
+                banner = save_image(request.files.get('new-banner'), 'img')
             except ValueError as error:
                 flash(str(error), 'error')
             else:
@@ -209,7 +204,7 @@ def campaign():
                     new_form.event_date.data,
                     event_start_time=start,
                     event_end_time=end,
-                    event_type=event_type,
+                    event_type=new_form.event_type.data,
                     banner_image_url=banner or None,
                     tiers=tiers,
                 )
@@ -223,9 +218,9 @@ def campaign():
         if campaign_form.validate_on_submit():
             try:
                 check_campaign_lengths(campaign_form)
-                start, end, event_type = read_campaign_extras('campaign')
+                start, end = read_campaign_extras('campaign')
                 tiers = read_tiers('campaign')
-                banner = save_image(request.files.get('campaign-banner'))
+                banner = save_image(request.files.get('campaign-banner'), 'img')
             except ValueError as error:
                 flash(str(error), 'error')
             else:
@@ -239,7 +234,7 @@ def campaign():
                     campaign_form.event_date.data,
                     event_start_time=start,
                     event_end_time=end,
-                    event_type=event_type,
+                    event_type=campaign_form.event_type.data,
                     banner_image_url=banner or None,
                 )
                 if ok:
@@ -370,89 +365,26 @@ def admin():
 
 
 
-# Supporter pages
-
-@bp.route('/donation/', methods=['GET', 'POST'])
-def donation():
-    campaign = get_campaign()
-    donation_form = DonationForm(prefix='donation')
-    ticket_form = TicketForm(prefix='ticket')
-    donation_form.support_level.choices = [
-        (str(tier.id), f'{tier.name} - ${tier.amount:,.0f}')
-        for tier in campaign.tiers
-    ]
-
-    if request.method == 'POST':
-        form_type = request.form.get('form_type')
-        if form_type == 'donation' and donation_form.validate_on_submit():
-            tier = next(tier for tier in campaign.tiers if str(tier.id) == donation_form.support_level.data)
-            add_donation(Donation(
-                len(get_customers()) + 1,
-                donation_form.donation_amount.data,
-                donation_form.donor_name.data or 'Anonymous Supporter',
-                donation_form.donor_email.data,
-                donation_form.donor_phone.data or '',
-                donation_form.donor_message.data or '',
-                tier.name,
-                donation_form.donation_payment.data,
-                donation_form.anonymous_donation.data,
-            ))
-            flash('Thank you for supporting Rinascita Sonora!')
-            return redirect(url_for('main.donation'))
-        if form_type == 'ticket' and ticket_form.validate_on_submit():
-            add_purchase(Purchase(
-                len(get_customers()) + 1,
-                ticket_form.ticket_name.data,
-                ticket_form.ticket_email.data,
-                ticket_form.ticket_phone.data or '',
-                50.00,
-                ticket_form.attendees.data,
-                ticket_form.ticket_payment.data,
-            ))
-            flash('Your tickets have been reserved!')
-            return redirect(url_for('main.donation'))
-        flash('Please check the submitted details.', 'error')
-
-    return render_template(
-        'donation.html',
-        campaign=campaign,
-        posts=get_public_posts(campaign.id),
-        supporters=get_customers(campaign.id),
-        donation_form=donation_form,
-        ticket_form=ticket_form,
-        ticket_cost=50.00,
-    )
-
-
-@bp.post('/posts/<int:post_id>/report/')
-def report_post(post_id):
-    report_type = request.form.get('report-type', 'Other')
-    add_report(Report(len(get_customers()) + 1, post_id, report_type))
-    flash('Thank you. The post has been reported for review.')
-    return redirect(url_for('main.donation'))
-
-
-
 # Authentication
 
 @bp.route('/register/', methods=['POST', 'GET'])
 def register():
     form = RegisterForm()
+    organisations = db.get_organisations()
+    form.organisation.choices = [
+        ('', 'Select an organisation'),
+        *((str(organisation.id), organisation.name) for organisation in organisations),
+    ]
     if request.method == 'POST' and form.validate_on_submit():
 
         email = getattr(getattr(form, 'email', None), 'data', '') or ''
 
         # Check by username / email only, not by password
-        if cm.username_exists(form.username.data, email):
+        if db.username_exists(form.username.data, email):
             flash('Username or email already registered', 'error')
             return redirect(url_for('main.register'))
 
-        # Administrators can never be created through public registration
-        role = getattr(getattr(form, 'role', None), 'data', None)
-        if role not in ('supporter', 'fundraiser'):
-            role = 'supporter'
-
-        cm.add_user(form.username.data, email, form.password.data, role)
+        db.add_user(form)
         flash('Registration successful! Please log in.')
         return redirect(url_for('main.login'))
 
@@ -464,20 +396,28 @@ def login():
     form = LoginForm()
     if request.method == 'POST' and form.validate_on_submit():
 
-        user = cm.check_for_user(form.username.data, form.password.data)
+        user = db.check_for_user(form.username.data, form.password.data)
         if not user:
             flash('Invalid username or password', 'error')
-            return redirect(url_for('main.login'))
+            next_url = request.form.get('next')
+            login_url = url_for('main.login', next=next_url) if next_url else url_for('main.login')
+            return redirect(login_url)
 
         # Store identity and role in the (signed) session
         session.clear()
         session['user_id'] = user['id']
         session['username'] = user['username']
-        session['role'] = user['role']
+        role = AccountRole(user['role'])
+        session['role'] = role.value
         session['logged_in'] = True
         flash('Login successful!')
 
-        if user['role'] == 'fundraiser':
+        next_url = request.form.get('next', '')
+        if next_url.startswith('/') and not next_url.startswith('//'):
+            parsed_next = urlparse(next_url)
+            if not parsed_next.scheme and not parsed_next.netloc:
+                return redirect(next_url)
+        if role is AccountRole.FUNDRAISER:
             return redirect(url_for('main.campaign'))
         return redirect(url_for('main.index'))
 

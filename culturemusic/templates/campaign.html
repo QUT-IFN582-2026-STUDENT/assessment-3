@@ -1,9 +1,13 @@
-{% extends 'base.html' %} {% from 'bootstrap5/form.html' import render_field %}
-{% block title %}Campaign Management | Culture Music{% endblock %} {% block main
-%} {# Whole numbers when possible ($50,000), cents only when needed ($50,000.50)
-#} {% macro money(value) %}{% set v = value or 0 %}${{ ("{:,.0f}" if v == v|int
-else "{:,.2f}").format(v) }}{% endmacro %} {# One "Tier level" box, identical in
-layout to the original design #} {% macro tier_box(prefix, number, tier) %}
+{% extends 'base.html' %} 
+{% from 'bootstrap5/form.html' import render_field %}
+{% block title %}Campaign Management{% endblock %} 
+{% block main %} 
+{# Whole numbers when possible ($50,000), cents only when needed ($50,000.50) #} 
+{% macro money(value) %}
+{% set v = value or 0 %}${{ ("{:,.0f}" if v == v|int else "{:,.2f}").format(v) }}
+{% endmacro %} 
+{# One "Tier level" box, identical in layout to the original design #} 
+{% macro tier_box(prefix, number, tier) %}
 <div class="col-md-6">
   <div class="tier-option">
     <label class="form-label" for="{{ prefix }}-tier{{ number }}-name"
@@ -43,11 +47,11 @@ layout to the original design #} {% macro tier_box(prefix, number, tier) %}
     >
   </div>
 </div>
-{% endmacro %} <
+{% endmacro %}
 <div class="campaign-page">
   <section
     class="campaign-hero text-white"
-    style="background: url('{{ url_for('static', filename='img/clickerhappy-mic-1132528_1920.jpg') }}') center/cover;"
+    style="background: url('{{ url_for('static', filename=(campaign.banner_image_url if campaign and campaign.banner_image_url else 'img/artesitalia-conductor-5157153_1920.jpg')) }}') center/cover;"
   >
     <div class="container py-5">
       <div class="row">
@@ -385,17 +389,7 @@ layout to the original design #} {% macro tier_box(prefix, number, tier) %}
                     />
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label" for="new-event_type"
-                      >Event type</label
-                    >
-                    <input
-                      class="form-control"
-                      id="new-event_type"
-                      name="new-event_type"
-                      type="text"
-                      maxlength="50"
-                      placeholder="e.g. Concert, Workshop"
-                    />
+                    {{ render_field(new_form.event_type) }}
                   </div>
                   <div class="col-12">
                     <label class="form-label" for="new-banner"
@@ -502,17 +496,7 @@ layout to the original design #} {% macro tier_box(prefix, number, tier) %}
                     />
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label" for="campaign-event_type"
-                      >Event type</label
-                    >
-                    <input
-                      class="form-control"
-                      id="campaign-event_type"
-                      name="campaign-event_type"
-                      type="text"
-                      maxlength="50"
-                      value="{{ campaign.event_type or '' }}"
-                    />
+                    {{ render_field(campaign_form.event_type) }}
                   </div>
                   <div class="col-12">
                     <label class="form-label" for="campaign-banner"
@@ -608,7 +592,7 @@ layout to the original design #} {% macro tier_box(prefix, number, tier) %}
                     />
                     {% endif %}
                   </td>
-                  <td>{{ p.created_at.strftime('%d %b %Y') }}</td>
+                  <td>{{ p.createdDate.strftime('%d %b %Y') }}</td>
                   <td>
                     <details class="mb-2">
                       <summary class="btn btn-sm btn-admin-action">
