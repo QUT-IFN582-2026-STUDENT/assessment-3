@@ -1,7 +1,10 @@
 {% extends 'base.html' %} {% block title %}{{ campaign.title }} {% endblock %}
 {% block main %}
-<main class="donation-page">
-  <section class="fundraiser-hero text-white">
+<div class="donation-page">
+  <section
+    class="fundraiser-hero text-white"
+    style="background: url('{{ url_for('static', filename='img/artesitalia-conductor-5157153_1920.jpg') }}') center/cover;"
+  >
     <div class="container py-5">
       <p
         class="text-uppercase fw-bold mb-2"
@@ -175,45 +178,6 @@
                 </form>
               </article>
             </details>
-            <details class="donation-details">
-              <summary class="btn btn-login">Buy Ticket</summary>
-              <article class="donation-panel mb-4" id="ticket-form">
-                <h2 class="h3 mb-3">Buy tickets</h2>
-                <p class="small text-muted">
-                  Reserve tickets for {{ campaign.title }}.
-                </p>
-                <form action="{{ url_for('main.donation') }}" method="post">
-                  {{ ticket_form.hidden_tag() }}
-                  <input type="hidden" name="form_type" value="ticket" />
-                  {{ ticket_form.ticket_name.label(class="form-label") }}{{
-                  ticket_form.ticket_name(class="form-control mb-3",
-                  autocomplete="name") }} {{
-                  ticket_form.ticket_email.label(class="form-label") }}{{
-                  ticket_form.ticket_email(class="form-control mb-3",
-                  autocomplete="email") }} {{
-                  ticket_form.ticket_phone.label(class="form-label") }}{{
-                  ticket_form.ticket_phone(class="form-control mb-3",
-                  autocomplete="tel") }}
-                  <label class="form-label" for="ticket-cost"
-                    >Ticket cost per person (AUD)</label
-                  >
-                  <div class="input-group mb-3">
-                    <span class="input-group-text">$</span>
-                    <input
-                      class="form-control"
-                      id="ticket-cost"
-                      value="{{ '%.2f'|format(ticket_cost) }}"
-                      readonly
-                    />
-                  </div>
-                  {{ ticket_form.attendees.label(class="form-label") }}{{
-                  ticket_form.attendees(class="form-control mb-3", min="1") }}
-                  {{ ticket_form.ticket_payment.label(class="form-label") }}{{
-                  ticket_form.ticket_payment(class="form-select mb-4") }} {{
-                  ticket_form.submit(class="btn btn-search w-100 py-2") }}
-                </form>
-              </article>
-            </details>
           </div>
           <article class="fundraiser-panel mb-4">
             <h2 class="section-title">Fundraising Progress</h2>
@@ -272,5 +236,5 @@
       </div>
     </div>
   </section>
-</main>
+</div>
 {% endblock %}

@@ -38,17 +38,31 @@
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav site-nav mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" href="{{ url_for('main.index') }}">Home</a>
+                <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"
+                   {% if request.endpoint == 'main.index' %}aria-current="page"{% endif %}
+                   href="{{ url_for('main.index') }}">Home</a>
               </li>
+              {# Campaign management is for fundraisers only #}
+              {% if session.get('logged_in') and session.get('role') == 'fundraiser' %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.campaign') }}">Campaign</a>
+                <a class="nav-link {% if request.endpoint == 'main.campaign' %}active{% endif %}"
+                   {% if request.endpoint == 'main.campaign' %}aria-current="page"{% endif %}
+                   href="{{ url_for('main.campaign') }}">Campaign</a>
               </li>
+              {% endif %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.donation') }}">Donation</a>
+                <a class="nav-link {% if request.endpoint == 'main.donation' %}active{% endif %}"
+                   {% if request.endpoint == 'main.donation' %}aria-current="page"{% endif %}
+                   href="{{ url_for('main.donation') }}">Donation</a>
               </li>
+              {# Admin dashboard is for administrators only #}
+              {% if session.get('logged_in') and session.get('role') == 'admin' %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.admin') }}">Admin</a>
+                <a class="nav-link {% if request.endpoint == 'main.admin' %}active{% endif %}"
+                   {% if request.endpoint == 'main.admin' %}aria-current="page"{% endif %}
+                   href="{{ url_for('main.admin') }}">Admin</a>
               </li>
+              {% endif %}
             </ul>
             <form class="search-form d-flex flex-wrap gap-2 align-items-center" role="search">
               <input
@@ -64,13 +78,33 @@
               </select>
               <div class="d-flex px-2 gap-2">
                 <button class="btn btn-search" type="submit">Search</button>
+                {% if session.get('logged_in') %}
+                <a class="btn btn-login d-inline-flex align-items-center"
+                   href="{{ url_for('main.logout') }}"
+                   title="Signed in as {{ session.get('username') }}">Logout</a>
+                {% else %}
                 <a class="btn btn-login d-inline-flex align-items-center" href="{{ url_for('main.login') }}">Login</a>
+                {% endif %}
               </div>
             </form>
           </div>
         </div>
       </nav>
     </header>
+
+    {# Flash messages (success, errors) #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="container-fluid px-4 mt-3">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
 
     {% block head %}{% endblock %}
 
@@ -87,7 +121,11 @@
               |
               <a href="#contact">Contact Us</a>
               |
-              <a href="#login">Login/Register</a>
+              {% if session.get('logged_in') %}
+              <a href="{{ url_for('main.logout') }}">Logout</a>
+              {% else %}
+              <a href="{{ url_for('main.login') }}">Login</a> / <a href="{{ url_for('main.register') }}">Register</a>
+              {% endif %}
             </nav>
           </div>
         </div>

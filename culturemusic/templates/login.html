@@ -1,24 +1,29 @@
-{% extends 'base.html' %} {% import 'bootstrap5/form.html' as wtf %} {% block
-title %}Login | Culture Music{% endblock %} {% block main %}
-<section class="auth-section py-5">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-6">
-        <article class="auth-panel fundraiser-panel">
-          <p class="text-uppercase text-muted mb-2">Welcome back</p>
-          <h1 class="section-title">Log in to Culture Music</h1>
-          <p>Access your campaigns, donations, and event activity.</p>
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_field %}
 
-          {{ wtf.render_form(form) }}
+{% block title %}Log in{% endblock %}
 
-          <p class="mt-4 mb-0">
-            New to Culture Music?
-            <a href="{{ url_for('main.register') }}">Create an account</a>
-            .
+{% block main %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-3">Log in</h1>
+
+          <form method="post" action="{{ url_for('main.login') }}" novalidate>
+            {{ form.hidden_tag() }}
+            {% for field in form if field.widget.input_type != 'hidden' and field.type != 'SubmitField' %}
+              {{ render_field(field) }}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100">Log in</button>
+          </form>
+          <p class="text-center text-muted mt-3 mb-0">
+            No account yet? <a href="{{ url_for('main.register') }}">Register</a>
           </p>
-        </article>
+        </div>
       </div>
     </div>
   </div>
-</section>
+</div>
 {% endblock %}

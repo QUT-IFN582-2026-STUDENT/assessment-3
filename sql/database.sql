@@ -31,6 +31,7 @@ CREATE TABLE accounts (
 	firstName VARCHAR(50) NOT NULL,
     lastName VARCHAR(50) NOT NULL,
     email         VARCHAR(120) NOT NULL UNIQUE,
+    phone VARCHAR(20),
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('Supporter', 'Fundraiser', 'Admin') NOT NULL DEFAULT 'Supporter',
 	accountStatus  ENUM('Active', 'Suspended', 'Closed') NOT NULL DEFAULT 'Active',

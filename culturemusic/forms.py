@@ -56,4 +56,22 @@ class ReportForm(FlaskForm):
     report_type = SelectField('Report type', choices=[('Misleading information', 'Misleading information'), ('Inappropriate content', 'Inappropriate content'), ('Spam', 'Spam'), ('Other', 'Other')], validators=[InputRequired()])
     submit = SubmitField('Submit report')
 
+class CampaignForm(FlaskForm):
+    title = StringField('Campaign title', validators=[InputRequired()])
+    overview = TextAreaField('Overview', validators=[InputRequired()])
+    description = TextAreaField('Description', validators=[InputRequired()])
+    location = StringField('Location', validators=[InputRequired()])
+    event_date = StringField('Event date', validators=[InputRequired()])
+    event_time = StringField('Event time', validators=[Optional()])
+    goal_amount = IntegerField('Fundraising goal', validators=[InputRequired(), NumberRange(min=1)])
+#    status = SelectField('Campaign status', choices=[
+#        ('Draft', 'Draft'), ('Pending', 'Pending'), ('Active', 'Active'),
+#        ('Paused', 'Paused'), ('Suspended', 'Suspended')
+#    ], validators=[InputRequired()])
+    submit = SubmitField('Submit')
+    
+class PostForm(FlaskForm):
+    title = StringField('Post title', validators=[InputRequired()])
+    message = TextAreaField('Update message', validators=[InputRequired()])
+    submit = SubmitField('Publish Update')
 
