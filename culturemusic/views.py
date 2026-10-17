@@ -15,6 +15,7 @@ from . import db_campaign as cm
 
 from .models import AccountRole
 from .forms import LoginForm, RegisterForm, CampaignForm, PostForm
+from .forms import SearchForm  # New line for search feature
 
 
 bp = Blueprint('main', __name__)
@@ -134,11 +135,63 @@ def read_tiers(prefix):
 
 
 
-# Public pages
-
+# Home 
 @bp.route('/')
 def index():
-    return render_template('index.html')
+    campaigns = db.search_campaigns('','',)
+    return render_template(
+            'index.html',
+            searched=True,
+            campaigns=campaigns,
+            search_form=SearchForm(),
+    )
+   
+
+
+'''
+*********************************************************************************
+Search Functionality
+MVC = Controller
+Flow:
+1 - receives the request once the user clocks the "Search" button in the nav bar
+2 - checks the inputs with SearchForm (found in forms.py)
+3 - asks the model (db.search_campaigns in db.py) for matching cmapaigns
+4 - then hands the results to views.py to display
+Importantly, this route has no SQL or html in it. The criteria appear in
+the URL, so a search can be bookmarked or refreshed.
+'''
+@bp.route('/search/')
+def search():
+    # Load the form with the values from the URL query string.
+    # request.args = values sent with GET (request.form would be POST data).
+    search_form = SearchForm(request.args)
+
+    # Start with "no results" so the page still works if validation fails.
+    campaigns = []
+
+    # validate() - this is to check the rules which are declared in searchform
+    #   rule = keyword at most is 200 characters in length, event_type is one of the allowed choices
+    
+    if search_form.validate():
+        # This passes the two criteria to the MODEL. This returns a list of objects (models.py)
+        # related to active campaigns only.
+        # the "or ''" part turns a missing value (None, e.g. someone opens /search/
+        # with nothing in the URL) into an empty string, and strip() removes stray spaces.
+        campaigns = db.search_campaigns(
+            (search_form.keyword.data or '').strip(),
+            search_form.event_type.data or '',
+        )
+
+    # Pass everything the VIEW needs to index.html:
+    #   searched - True, so index.html shows the Search Results section
+    #   campaigns -the list of Campaign objects to display
+    #   search_form - the criteria (for the summary line) and any errors
+    return render_template(
+        'index.html',
+        searched=True,
+        campaigns=campaigns,
+        search_form=search_form,
+    )
 
 
 

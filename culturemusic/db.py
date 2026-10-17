@@ -207,3 +207,128 @@ Campaigns[0].supporter_count = 128
 Campaigns[0].visitor_count = 2846
 Campaigns[0].calculateAmountRaised([])  # placeholder; set directly below for sample data
 Campaigns[0]._amount_raised = 32500.00
+
+
+'''
+**************************************************************************************
+Search Functionality
+MVC = Model
+
+Everything that talks to the database lives in this .py.
+The controller (views.py search route) calls the search_campaigns(), with the
+view (index.html) only ever receiving the the final campaign objects as requested.
+The html pages never see SQL directly and they never connect to the database.
+
+'''
+
+
+from .models import CampaignEventType   # new import
+
+
+def search_campaigns(keyword, event_type):
+    """
+    Find public campaigns by the title keyword input and/or the event type dropdown selection.
+
+    This function is called by views.py-search() route
+    The function recieves:
+        1 - keyword (text typed in the search box ('' = any title))
+        2 - event_type ('Free', 'Ticketed', or '' (= any event type))
+    
+    The function returns:
+        1 - a list of Campaign dataclass objects (models.py), which are then passed back
+        to the route, which then passes them to index.html.
+    """
+    # Step 1 - SQL build
+    # Only the 'Active' campaigns are public. Pending, Paused, Suspended, Rejected,
+    # Draft and Closed campaigns will never appear in a public search. The JOINs fetch the 
+    # organisation and the creating account, because the existing Campaign dataclass needs
+    # an Organisation and a UserAccount.
+    sql = """
+        SELECT c.id, c.title, c.goalAmount, c.amountRaised, c.status,
+               c.location, c.eventDate, c.eventStartTime, c.eventEndTime,
+               c.overview, c.description, c.bannerImageUrl, c.isFeatured,
+               c.eventType, c.createdDate, c.updatedDate, c.publishDate,
+               o.id AS org_id, o.name AS org_name, o.description AS org_description,
+               a.id AS creator_id, a.username AS creator_username,
+               a.firstName AS creator_firstname, a.surName AS creator_surname,
+               a.email AS creator_email, a.phone AS creator_phone
+        FROM campaigns c
+        JOIN organisations o ON o.id = c.orgId
+        JOIN accounts a ON a.id = c.createdBy
+        WHERE c.status = 'Active'
+    """
+    # Params Variable
+    # params variable holds the values input by the user. They are sent to MySQL seperately 
+    # from the SQL text (each %s is a placeholder). MySQL treats them as plain data,
+    # never as SQL commands. This is what prevents SQL injection
+    params = []
+
+    # Keyword filter (only if something was typed)
+    # Eg. '%night%' means "title contains night" anywhere in the title
+    # The database collation is case-insensitive
+    if keyword:
+        sql = sql + " AND c.title LIKE %s"
+        params.append('%' + keyword + '%')
+
+    # Event type filter (only if a type was chosen in the dropdown).
+    if event_type:
+        sql = sql + " AND c.eventType = %s"
+        params.append(event_type)
+
+    # Soonest event first.
+    sql = sql + " ORDER BY c.eventDate, c.title"
+
+    # Step 2 - query is run
+    # Same cursor pattern as the existing functions in this file
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()     # list of dicts, one per campaign
+    finally:
+        cursor.close()
+
+    # Step 3 - each database row is turned into the EXISTING dataclasses
+    # Organisation, UserInfo, UserAccount and Campaign all come from models.py.
+    campaigns = []
+    for row in rows:
+        organisation = Organisation(
+            id=row['org_id'],
+            name=row['org_name'],
+            description=row['org_description'] or '',
+            logo_url='',
+        )
+        creator = UserAccount(
+            username=row['creator_username'],
+            password='',  # never loads or passes a password to a page
+            info=UserInfo(
+                id=str(row['creator_id']),
+                firstname=row['creator_firstname'],
+                surname=row['creator_surname'],
+                email=row['creator_email'],
+                phone=row['creator_phone'] or '',
+            ),
+        )
+        campaign = Campaign(
+            _id=row['id'],
+            _title=row['title'],
+            _goal_amount=float(row['goalAmount']), # decimal to float
+            _amount_raised=float(row['amountRaised']),
+            _status=CampaignStatusEnum(row['status']),# 'Active' to enum
+            _location=row['location'],
+            _event_date=row['eventDate'],
+            _event_start_time=row['eventStartTime'],
+            _event_end_time=row['eventEndTime'],
+            _overview=row['overview'],
+            _description=row['description'],
+            _banner_image_url=row['bannerImageUrl'] or '',
+            _created_by=creator,
+            _organisation=organisation,
+            _event_type=CampaignEventType(row['eventType']),# 'Free' to enum
+            _is_featured=bool(row['isFeatured']),
+            _created_date=row['createdDate'],
+            _updated_date=row['updatedDate'],
+            _publish_date=row['publishDate'],
+        )
+        campaigns.append(campaign)
+
+    return campaigns

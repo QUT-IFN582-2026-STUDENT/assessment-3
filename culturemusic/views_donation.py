@@ -26,7 +26,7 @@ def authenticated_required(view):
 
 @bp_donation.get('/donation/', defaults={'campaign_id': None})
 @bp_donation.get('/donation/<int:campaign_id>/')
-def donation(campaign_id=None):
+def donation(campaign_id):
     if campaign_id is None:
         campaign_id = request.values.get('campaign_id', type=int)
     page = models_donation.get_donation_page(

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Culture Music{% endblock %}</title>
+    <title>Culture Music - {% block title %}{% endblock %}</title>
     <meta name="description" content="Culture Music" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
@@ -64,18 +64,42 @@
               </li>
               {% endif %}
             </ul>
-            <form class="search-form d-flex flex-wrap gap-2 align-items-center" role="search">
+            {# ---------------------------------------------------------------------------------  
+              Search Functionality/Feature - AK
+                MVC area = VIEW. This form has no connection to the database, and only collects
+                the search criteria and sends it to the controller.
+                "get" method: the criteria values are in the url
+                action: builds the url of the search route in view.py     
+            #}
+
+            <form class="search-form d-flex flex-wrap gap-2 align-items-center" role="search"
+                  method="get" action="{{ url_for('main.search') }}">
+              
+              {# name = "keyword" added as the browser will only send inputs that have a name.
+                  the keyword must also match the field name in SearchForms (forms.py) #}
+              
               <input
                 class="form-control search-input"
                 type="search"
+                name="keyword"
+                value="{{ request.args.get('keyword', '') }}"
                 placeholder="Search Events"
                 aria-label="Search Events" />
-              <select class="form-select filter-select gap-2" name="location" aria-label="Choose Location">
-                <option value="">Choose Location</option>
-                <option value="brisbane">Brisbane</option>
-                <option value="gold_coast">Gold Coast</option>
-                <option value="sunshine_coast">Sunshine Coast</option>
+
+              {# The location dropdown was replaced with the event type dropdown. The eventtype
+                must match the field name in SearchForm- and the dropdown values must also match 
+                the database values. #}
+              
+              <select class="form-select filter-select gap-2" name="event_type" aria-label="Choose event type">
+                <option value="">All event types</option>
+                <option value="Free" {% if request.args.get('event_type') == 'Free' %}selected{% endif %}>Free</option>
+                <option value="Ticketed" {% if request.args.get('event_type') == 'Ticketed' %}selected{% endif %}>Ticketed</option>
               </select>
+              
+              {# End of the Search feature changes #} 
+              {# --------------------------------------------------------------------------------#}
+              
+              
               <div class="d-flex px-2 gap-2">
                 <button class="btn btn-search" type="submit">Search</button>
                 {% if session.get('logged_in') %}
@@ -136,4 +160,4 @@
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
       crossorigin="anonymous"></script>
   </body>
-</html>
+</html

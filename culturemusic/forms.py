@@ -68,3 +68,50 @@ class PostForm(FlaskForm):
     title = StringField('Post title', validators=[InputRequired()])
     message = TextAreaField('Update message', validators=[InputRequired()])
     submit = SubmitField('Publish Update')
+
+
+'''
+********************************************************************************
+Search functionality content
+MVC = part of the Controller handling. The search route in views.py uses this 
+SearchForm class to check the values that the user typed into the nav bar in index.html
+The data comes from the browser and then goes to views.py search function
+
+'''
+from wtforms.validators import Length   # new import, used only by SearchForm
+
+
+class SearchForm(FlaskForm):
+    """Holds and validates the two search criteria: keyword and event type."""
+
+    class Meta:
+        # CSRF (cross-site request forgery) protection is for forms that CHANGE
+        # data with POST. Search only READS data and is sent with GET, and the
+        # nav bar form has no hidden CSRF token. If CSRF stayed on, validate()
+        # would always fail with "The CSRF token is missing".
+        csrf = False
+
+    # Keyword box. Matched against the campaign TITLE only.
+    # Optional() -> the box may be left empty (search by event type only).
+    # Length(max=200) -> the title column is VARCHAR(200), so a longer keyword
+    # could never match; rejects it with a clear message.
+    keyword = StringField(
+        'Keyword',
+        validators=[Optional(), Length(max=200)],
+    )
+
+    # This is the Event type dropdown.
+    # The choices are built from existing CampaignEventType dataclass which is found in 
+    # models.py (Free, Ticketed are the options), so the allowed values always match the
+    # eventType column in the database.
+    # ('', 'All event types') allows for the no filter option.
+    # The SelectField class automatically rejects any value that is not in the choices,
+    # for example a hand-edited URL with event_type = Concert will fail validation.
+    event_type = SelectField(
+        'Event type',
+        choices=[('', 'All event types')]
+                + [(event_type.value, event_type.value) for event_type in CampaignEventType],
+        validators=[Optional()],
+    )
+
+    submit = SubmitField('Search')
