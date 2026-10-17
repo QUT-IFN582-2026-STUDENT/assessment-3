@@ -5,22 +5,26 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, s
 from . import db_donation
 from . import models_donation
 from .forms import DonationForm
-from .models import Report, ReportType
+from .models import AccountRole, Report, ReportType
 
 
 bp_donation = Blueprint('bp_donation', __name__)
 
 
 # Access control
-def authenticated_required(view):
+def supporter_required(view):
     """Only an authenticated user may open the decorated endpoint."""
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not session.get('logged_in'):
-            flash('Please log in to donate to campaigns.', 'error')
+            flash('Please log in as a supporter to make donations.', 'error')
             return redirect(url_for('main.login'))
+        if session.get('role') != AccountRole.SUPPORTER.value:
+            flash('Only supporters can make donations.', 'error')
+            return redirect(url_for('main.index'))
         return view(*args, **kwargs)
     return wrapped
+
 
 
 
@@ -29,6 +33,16 @@ def authenticated_required(view):
 def donation(campaign_id):
     if campaign_id is None:
         campaign_id = request.values.get('campaign_id', type=int)
+    if (
+        request.args.get('notice') == 'supporter-required'
+        and session.get('logged_in')
+        and session.get('role') != AccountRole.SUPPORTER.value
+    ):
+        flash(
+            'Please log out, then log in with a Supporter account to donate.',
+            'error',
+        )
+
     page = models_donation.get_donation_page(
         campaign_id,
         session.get('user_id') if session.get('logged_in') else None,
@@ -52,7 +66,7 @@ def donation(campaign_id):
 
 
 @bp_donation.post('/donation/<int:campaign_id>/submit/')
-@authenticated_required
+@supporter_required
 def submit_donation(campaign_id):
     campaign = models_donation.get_campaign(campaign_id)
     if campaign is None:

@@ -447,6 +447,9 @@ def register():
 @bp.route('/login/', methods=['POST', 'GET'])
 def login():
     form = LoginForm()
+    if request.method == 'GET' and request.args.get('notice') == 'donation':
+        flash('Please log in with a Supporter account to donate.', 'error')
+
     if request.method == 'POST' and form.validate_on_submit():
 
         user = db.check_for_user(form.username.data, form.password.data)

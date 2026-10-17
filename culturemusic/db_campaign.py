@@ -229,34 +229,55 @@ def get_public_campaign(campaign_id=None):
     """Return an active campaign with its organisation, creator, and donor tiers."""
     campaign_filter = 'AND c.id = %s' if campaign_id is not None else ''
     params = (campaign_id,) if campaign_id is not None else ()
+    
     row = query(
         f"""
-        SELECT c.id, c.title, c.goalAmount AS goal_amount,
-               c.amountRaised AS amount_raised, c.status, c.location,
-               c.eventDate AS event_date, c.eventStartTime AS event_start_time,
-               c.eventEndTime AS event_end_time, c.overview, c.description,
-               c.bannerImageUrl AS banner_image_url, c.isFeatured AS is_featured,
-               c.createdDate AS created_date, c.updatedDate AS updated_date,
-               c.publishDate AS publish_date, c.eventType AS event_type,
-               (SELECT COUNT(*) FROM donations d
-                WHERE d.campaignId = c.id) AS supporter_count,
-               o.id AS organisation_id, o.name AS organisation_name,
-               o.description AS organisation_description,
-               a.id AS creator_id, a.username AS creator_username,
-               a.firstName AS creator_firstname, a.surName AS creator_surname,
-               a.email AS creator_email, a.phone AS creator_phone,
-               a.role AS creator_role, a.accountStatus AS creator_account_status,
-               a.created_at AS creator_created_at,
-               creator_org.id AS creator_org_id,
-               creator_org.name AS creator_org_name,
-               creator_org.description AS creator_org_description
+        SELECT 
+            c.id, c.title, c.goalAmount AS goal_amount,
+            c.amountRaised AS amount_raised, c.status,
+            c.location, c.eventDate AS event_date,
+            c.eventStartTime AS event_start_time,
+            c.eventEndTime AS event_end_time, c.overview,
+            c.description, c.bannerImageUrl AS banner_image_url,
+            c.isFeatured AS is_featured, c.createdDate AS created_date,
+            c.updatedDate AS updated_date, c.publishDate AS publish_date,
+            c.eventType AS event_type,
+
+            supporter_count.supporter_count,
+
+            o.id AS organisation_id,
+            o.name AS organisation_name,
+            o.description AS organisation_description,
+
+            a.id AS creator_id,
+            a.username AS creator_username,
+            a.firstName AS creator_firstname,
+            a.surName AS creator_surname,
+            a.email AS creator_email,
+            a.phone AS creator_phone,
+            a.role AS creator_role,
+            a.accountStatus AS creator_account_status,
+            a.created_at AS creator_created_at,
+
+            creator_org.id AS creator_org_id,
+            creator_org.name AS creator_org_name,
+            creator_org.description AS creator_org_description
+
         FROM campaigns c
         JOIN organisations o ON o.id = c.orgId
         JOIN accounts a ON a.id = c.createdBy
         LEFT JOIN organisations creator_org ON creator_org.id = a.orgId
+
+        LEFT JOIN (
+            SELECT campaignId, COUNT(*) AS supporter_count
+            FROM donations
+            GROUP BY campaignId
+        ) supporter_count ON supporter_count.campaignId = c.id
+
         WHERE c.status = 'Active' {campaign_filter}
         ORDER BY c.isFeatured DESC, c.publishDate DESC, c.id DESC
-        LIMIT 1
+        LIMIT 1;
+
         """,
         params,
         one=True,

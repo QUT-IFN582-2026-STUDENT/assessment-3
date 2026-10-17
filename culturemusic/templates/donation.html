@@ -142,14 +142,11 @@
 
         <aside class="col-lg-4">
           <div class="d-flex flex-wrap gap-2 mb-4">
+            {% if session.get('logged_in') and session.get('role') == 'Supporter' %}
             <details
               class="donation-details"
-              {% if not session.get('logged_in') %}
-              data-login-url="{{ url_for('main.login', next=url_for('bp_donation.donation', campaign_id=campaign.id)) }}"
-              {% endif %}
             >
               <summary class="btn btn-search">Donate Now</summary>
-              {% if session.get('logged_in') %}
               <article class="donation-panel mb-4" id="donation-form">
                 <h2 class="h3 mb-3">Make a donation</h2>
                 {% if user %}
@@ -224,8 +221,20 @@
                   }}
                 </form>
               </article>
-              {% endif %}
             </details>
+            {% elif not session.get('logged_in') %}
+            <a
+              class="btn btn-search"
+              href="{{ url_for('main.login', next=url_for('bp_donation.donation', campaign_id=campaign.id), notice='donation') }}"
+              >Donate Now</a
+            >
+            {% else %}
+            <a
+              class="btn btn-search"
+              href="{{ url_for('bp_donation.donation', campaign_id=campaign.id, notice='supporter-required') }}"
+              >Donate Now</a
+            >
+            {% endif %}
           </div>
           <article class="fundraiser-panel mb-4">
             <h2 class="section-title">Fundraising Progress</h2>
@@ -290,12 +299,4 @@
     </div>
   </section>
 </div>
-<script>
-  document.querySelectorAll('.donation-details[data-login-url] summary').forEach((summary) => {
-    summary.addEventListener('click', (event) => {
-      event.preventDefault();
-      window.location.assign(summary.parentElement.dataset.loginUrl);
-    });
-  });
-</script>
 {% endblock %}
