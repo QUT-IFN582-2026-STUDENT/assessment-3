@@ -98,20 +98,7 @@ def submit_donation(campaign_id):
 
 @bp_donation.post('/posts/<int:post_id>/report/')
 def report_post(post_id):
-    try:
-        report_type = ReportType(request.form.get('report-type', ReportType.OTHER.value))
-    except ValueError:
-        flash('Please select a valid report type.', 'error')
-        return redirect(url_for(
-            'bp_donation.donation',
-            campaign_id=request.form.get('campaign_id', type=int),
-        ))
-    db_donation.add_report(Report(
-        id=db_donation.next_report_id(),
-        post_id=post_id,
-        report_type=report_type,
-    ))
-    flash('Thank you. The post has been reported for review.')
+    
     return redirect(url_for(
         'bp_donation.donation',
         campaign_id=request.form.get('campaign_id', type=int),
