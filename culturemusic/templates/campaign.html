@@ -1,44 +1,121 @@
-{% extends 'base.html' %} {% block title %}Campaign Management | Culture Music
-{% endblock %} {% block main %}
-<main class="campaign-page">
-  <section class="campaign-hero text-white">
+{% extends 'base.html' %} 
+{% from 'bootstrap5/form.html' import render_field %}
+{% block title %}Campaign Management{% endblock %} 
+{% block main %} 
+{# Whole numbers when possible ($50,000), cents only when needed ($50,000.50) #} 
+{% macro money(value) %}
+{% set v = value or 0 %}${{ ("{:,.0f}" if v == v|int else "{:,.2f}").format(v) }}
+{% endmacro %} 
+{# One "Tier level" box, identical in layout to the original design #} 
+{% macro tier_box(prefix, number, tier) %}
+<div class="col-md-6">
+  <div class="tier-option">
+    <label class="form-label" for="{{ prefix }}-tier{{ number }}-name"
+      >Tier level {{ number }}</label
+    >
+    <input
+      class="form-control mb-2"
+      id="{{ prefix }}-tier{{ number }}-name"
+      name="{{ prefix }}-tier{{ number }}_name"
+      type="text"
+      maxlength="100"
+      value="{{ tier.name if tier else '' }}"
+    />
+    <label class="form-label" for="{{ prefix }}-tier{{ number }}-amount"
+      >Amount</label
+    >
+    <input
+      class="form-control mb-2"
+      id="{{ prefix }}-tier{{ number }}-amount"
+      name="{{ prefix }}-tier{{ number }}_amount"
+      type="number"
+      min="1"
+      step="0.01"
+      value="{% if tier %}{% if tier.amount is string %}{{ tier.amount }}{% else %}{{ '%g' % (tier.amount|float) }}{% endif %}{% endif %}"
+    />
+    <label class="form-label" for="{{ prefix }}-tier{{ number }}-benefits"
+      >Recognition benefits</label
+    >
+    <textarea
+      class="form-control"
+      id="{{ prefix }}-tier{{ number }}-benefits"
+      name="{{ prefix }}-tier{{ number }}_benefits"
+      rows="2"
+      maxlength="500"
+    >
+{{ tier.benefits if tier else '' }}</textarea
+    >
+  </div>
+</div>
+{% endmacro %}
+<div class="campaign-page">
+  <section
+    class="campaign-hero text-white"
+    style="background: url('{{ url_for('static', filename=(campaign.banner_image_url if campaign and campaign.banner_image_url else 'img/artesitalia-conductor-5157153_1920.jpg')) }}') center/cover;"
+  >
     <div class="container py-5">
       <div class="row">
         <div class="col-lg-8">
+          {% if campaign %}
           <p
             class="text-uppercase fw-bold mb-2"
             style="color: var(--secondary-color)"
           >
-            Active
+            {{ campaign.status }}
           </p>
-          <h1 class="display-4 fw-bold">Sound of OPM</h1>
-          <p class="lead mb-1">
-            Honouring the soul of Filipino music through heartfelt performances,
-            cultural connection, and the shared pride of OPM artists and fans.
-          </p>
+          <h1 class="display-4 fw-bold">{{ campaign.title }}</h1>
+          <p class="lead mb-1">{{ campaign.overview }}</p>
           <p class="mb-0">
             Presented by
-            <strong>Pamana Filipino in Brisbane</strong>
-            | The Tivoli, Fortitude Valley
+            <strong
+              >{{ campaign.organisation_name or session.get('username')
+              }}</strong
+            >
+            {% if campaign.location %}| {{ campaign.location }}{% endif %}
           </p>
           <div class="row g-3 mt-3 campaign-meta">
             <div class="col-sm-4">
               <strong class="d-block">Event date</strong>
-              <span class="d-block">28 September 2026</span>
-              <span>6:00 pm - 9:00 pm</span>
+              <span class="d-block">
+                {% if campaign.event_date %}{{ campaign.event_date.strftime('%d
+                %B %Y') }}{% else %}To be announced{% endif %}
+              </span>
+              {% if campaign.event_start_time %}
+              <span>
+                {{ campaign.event_start_time.strftime('%I:%M
+                %p')|trim('0')|lower }} {% if campaign.event_end_time %} - {{
+                campaign.event_end_time.strftime('%I:%M %p')|trim('0')|lower
+                }}{% endif %}
+              </span>
+              {% endif %}
             </div>
             <div class="col-sm-4">
               <strong class="d-block">Location</strong>
-              <span class="d-block">The Tivoli</span>
-              <span>52 Costin Street, Fortitude Valley, QLD 4006</span>
+              <span class="d-block"
+                >{{ campaign.location or 'To be announced' }}</span
+              >
             </div>
+            {% if campaign.event_type %}
+            <div class="col-sm-4">
+              <strong class="d-block">Event type</strong>
+              <span class="d-block">{{ campaign.event_type }}</span>
+            </div>
+            {% endif %}
           </div>
+          {% else %}
+          <h1 class="display-4 fw-bold">Campaign Management</h1>
+          <p class="lead mb-0">
+            Create your first campaign below to get started.
+          </p>
+          {% endif %}
         </div>
       </div>
     </div>
   </section>
 
   <section class="container-fluid px-4 py-5" aria-labelledby="overview-heading">
+    <!-- Campaign overview statistics -->
+    {% if campaign and stats %}
     <div class="row g-4">
       <div class="col-12">
         <article class="fundraiser-panel mb-4">
@@ -49,48 +126,77 @@
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel campaign-stat p-3">
                 <span class="stat-label">Fundraising goal</span>
-                <strong class="stat-value d-block">$50,000</strong>
+                <strong class="stat-value d-block"
+                  >{{ money(stats.goal) }}</strong
+                >
                 <span class="small text-muted">Campaign target</span>
               </article>
             </div>
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel campaign-stat p-3">
                 <span class="stat-label">Amount raised</span>
-                <strong class="stat-value d-block">$32,500</strong>
-                <span class="small text-muted">65% of goal</span>
+                <strong class="stat-value d-block"
+                  >{{ money(stats.raised) }}</strong
+                >
+                <span class="small text-muted"
+                  >{{ stats.percent }}% of goal</span
+                >
               </article>
             </div>
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel campaign-stat p-3">
                 <span class="stat-label">Supporters</span>
-                <strong class="stat-value d-block">128</strong>
+                <strong class="stat-value d-block"
+                  >{{ stats.donor_count }}</strong
+                >
                 <span class="small text-muted">Total donations</span>
               </article>
             </div>
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel campaign-stat p-3">
-                <span class="stat-label">Visitors</span>
-                <strong class="stat-value d-block">2,846</strong>
-                <span class="small text-muted">Updated today</span>
+                <span class="stat-label">Average donation</span>
+                <strong class="stat-value d-block"
+                  >{{ money(stats.average) }}</strong
+                >
+                <span class="small text-muted"
+                  >Largest: {{ money(stats.largest) }}</span
+                >
               </article>
             </div>
           </div>
         </article>
       </div>
     </div>
+    {% endif %}
 
     <div class="row g-4">
       <div class="col-12">
+        <!-- Campaign list -->
         <article class="fundraiser-panel mb-4">
           <div
             class="campaign-panel-heading d-flex justify-content-between align-items-center flex-wrap gap-2"
           >
-            <h2 class="section-title">Campaign List</h2>
+            <h2
+              class="section-title"
+              {%
+              if
+              not
+              (campaign
+              and
+              stats)
+              %}id="overview-heading"
+              {%
+              endif
+              %}
+            >
+              Campaign List
+            </h2>
           </div>
           <p class="small text-muted">
             Create a new campaign or select an existing one to view, delete,
             update status, or show statistics.
           </p>
+
           <div
             class="campaign-management-toolbar d-flex flex-wrap gap-2 mb-3 align-items-center"
           >
@@ -102,28 +208,65 @@
               id="campaign-status-filter"
             >
               <option selected>All campaigns</option>
-              <option>Draft</option>
               <option>Pending</option>
               <option>Active</option>
               <option>Paused</option>
+              <option>Closed</option>
+              <option>Rejected</option>
               <option>Suspended</option>
             </select>
+
+            {% if campaign %}
             <span class="admin-action-divider" aria-hidden="true"></span>
-            <button class="btn btn-sm btn-outline-danger" type="button">
-              Delete
-            </button>
+
+            <form
+              method="post"
+              action="{{ url_for('main.campaign', campaign_id=campaign.id) }}"
+              onsubmit="
+                return confirm('Delete this campaign? This cannot be undone.');
+              "
+            >
+              <input type="hidden" name="form_type" value="campaign_delete" />
+              <button class="btn btn-sm btn-outline-danger" type="submit">
+                Delete
+              </button>
+            </form>
+
             <div class="admin-status-actions ms-xl-auto">
+              {% if can_change_status %}
               <span class="admin-status-label">Update Status</span>
-              <button class="btn btn-sm btn-outline-warning" type="button">
-                Pause
-              </button>
-              <button class="btn btn-sm btn-outline-danger" type="button">
-                Suspend
-              </button>
+              {% for value, label, colour in [('active', 'Activate', 'success'),
+              ('paused', 'Pause', 'warning'), ('closed', 'Close', 'danger')] %}
+              {% if value != campaign.status %}
+              <form
+                method="post"
+                action="{{ url_for('main.campaign', campaign_id=campaign.id) }}"
+                class="d-inline"
+              >
+                <input type="hidden" name="form_type" value="status" />
+                <input type="hidden" name="status" value="{{ value }}" />
+                <button
+                  class="btn btn-sm btn-outline-{{ colour }}"
+                  type="submit"
+                >
+                  {{ label }}
+                </button>
+              </form>
+              {% endif %} {% endfor %} {% else %}
+              <span class="admin-status-label">
+                Status is <strong>{{ campaign.status }}</strong> and is
+                controlled by an administrator.
+              </span>
+              {% endif %}
             </div>
+            {% endif %}
           </div>
+
           <div class="table-responsive">
-            <table class="table align-middle admin-table mb-0 table-hover">
+            <table
+              class="table align-middle admin-table mb-0 table-hover"
+              id="campaign-table"
+            >
               <caption class="visually-hidden">
                 Campaign details
               </caption>
@@ -137,299 +280,282 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class="table-active">
-                  <td><strong>Sound of OPM</strong></td>
-                  <td>28 Sep 2026</td>
-                  <td>$50,000</td>
-                  <td>$32,500</td>
-                  <td><span class="badge status-badge">Active</span></td>
+                {% for c in campaigns %}
+                <tr
+                  class="{% if campaign and campaign.id == c.id %}table-active{% endif %}"
+                  data-status="{{ c.status }}"
+                >
+                  <td>
+                    <a
+                      class="fw-bold text-decoration-none"
+                      href="{{ url_for('main.campaign', campaign_id=c.id) }}"
+                      >{{ c.title }}</a
+                    >
+                  </td>
+                  <td>
+                    {% if c.event_date %}{{ c.event_date.strftime('%d %b %Y')
+                    }}{% else %}-{% endif %}
+                  </td>
+                  <td>{{ money(c.goal_amount) }}</td>
+                  <td>{{ money(c.amount_raised) }}</td>
+                  <td>
+                    <span
+                      class="badge {% if c.status == 'active' %}status-badge{% else %}admin-badge-active{% endif %}"
+                      >{{ c.status|capitalize }}</span
+                    >
+                  </td>
                 </tr>
+                {% else %}
                 <tr>
-                  <td><strong>Masskara Festival in Brisbane</strong></td>
-                  <td>18 Nov 2026</td>
-                  <td>$20,000</td>
-                  <td>$0</td>
-                  <td><span class="badge admin-badge-active">Draft</span></td>
+                  <td colspan="5" class="text-muted">
+                    You have no campaigns yet.
+                  </td>
                 </tr>
-                <tr>
-                  <td><strong>Pinoy Christmas</strong></td>
-                  <td>23 Dec 2026</td>
-                  <td>$30,000</td>
-                  <td>$0</td>
-                  <td><span class="badge admin-badge-active">Pending</span></td>
-                </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
 
           <div
-            class="campaign-form-actions d-flex flex-wrap align-items-center gap-2 mt-4"
+            class="campaign-form-actions d-flex flex-wrap align-items-start gap-3 mt-4"
           >
-            <details class="campaign-form-details">
+            <!-- Create a campaign -->
+            <details
+              class="campaign-form-details"
+              {%
+              if
+              new_form.errors
+              %}open{%
+              endif
+              %}
+            >
               <summary class="btn btn-sm btn-admin-action">
-                Create / View Campaign
+                Create Campaign
               </summary>
-              <form class="campaign-edit-form mt-4" id="campaign-form-panel">
+              <form
+                class="campaign-edit-form mt-4"
+                id="campaign-create-panel"
+                method="post"
+                enctype="multipart/form-data"
+                action="{{ url_for('main.campaign') }}"
+                novalidate
+              >
+                {{ new_form.hidden_tag() }}
+                <input type="hidden" name="form_type" value="create" />
+                <div class="campaign-panel-heading">
+                  <h3 class="section-title mb-0">New Campaign Form</h3>
+                </div>
+                <p class="small text-muted">
+                  New campaigns start as <strong>Pending</strong> until an
+                  administrator approves them.
+                </p>
+                <div class="row g-3">
+                  <div class="col-12">{{ render_field(new_form.title) }}</div>
+                  <div class="col-12">
+                    {{ render_field(new_form.overview) }}
+                  </div>
+                  <div class="col-12">
+                    {{ render_field(new_form.description) }}
+                  </div>
+                  <div class="col-md-4">
+                    {{ render_field(new_form.location) }}
+                  </div>
+                  <div class="col-md-4">
+                    {{ render_field(new_form.event_date) }}
+                  </div>
+                  <div class="col-md-4">
+                    {{ render_field(new_form.goal_amount) }}
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="new-event_start_time"
+                      >Event start time</label
+                    >
+                    <input
+                      class="form-control"
+                      id="new-event_start_time"
+                      name="new-event_start_time"
+                      type="datetime-local"
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="new-event_end_time"
+                      >Event end time</label
+                    >
+                    <input
+                      class="form-control"
+                      id="new-event_end_time"
+                      name="new-event_end_time"
+                      type="datetime-local"
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    {{ render_field(new_form.event_type) }}
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="new-banner"
+                      >Banner image (optional)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="new-banner"
+                      name="new-banner"
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.gif,.webp"
+                    />
+                  </div>
+                </div>
+                <fieldset class="mt-4">
+                  <legend class="section-title h4">Donor Tiers</legend>
+                  {% set new_slots = new_tiers_raw or [] %} {% set new_count =
+                  [4, new_slots|length]|max %}
+                  <input
+                    type="hidden"
+                    name="new-tier_count"
+                    value="{{ new_count }}"
+                  />
+                  <div class="row g-3">
+                    {% for n in range(1, new_count + 1) %} {{ tier_box('new', n,
+                    new_slots[n - 1] if n <= new_slots|length else none) }} {%
+                    endfor %}
+                  </div>
+                </fieldset>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                  <button class="btn btn-search" type="submit">Submit</button>
+                </div>
+              </form>
+            </details>
+
+            <!-- Edit the selected campaign -->
+            {% if campaign %}
+            <details
+              class="campaign-form-details"
+              {%
+              if
+              campaign_form.errors
+              %}open{%
+              endif
+              %}
+            >
+              <summary class="btn btn-sm btn-admin-action">
+                View / Edit Campaign
+              </summary>
+              <form
+                class="campaign-edit-form mt-4"
+                id="campaign-form-panel"
+                method="post"
+                enctype="multipart/form-data"
+                action="{{ url_for('main.campaign', campaign_id=campaign.id) }}"
+                novalidate
+              >
+                {{ campaign_form.hidden_tag() }}
+                <input type="hidden" name="form_type" value="campaign" />
                 <div class="campaign-panel-heading">
                   <h3 class="section-title mb-0">Campaign Form</h3>
                 </div>
                 <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label" for="campaign-title"
-                      >Campaign Title</label
-                    >
-                    <input
-                      class="form-control"
-                      id="campaign-title"
-                      type="text"
-                      value="Sound of OPM"
-                    />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="organiser-name"
-                      >Fundraiser / Group</label
-                    >
-                    <input
-                      class="form-control"
-                      id="organiser-name"
-                      type="text"
-                      value="Pamana Filipino in Brisbane"
-                    />
+                  <div class="col-12">
+                    {{ render_field(campaign_form.title) }}
                   </div>
                   <div class="col-12">
-                    <label class="form-label" for="campaign-description"
-                      >Overview</label
-                    >
-                    <textarea
-                      class="form-control"
-                      id="campaign-description"
-                      rows="4"
-                    >
-Pamana Filipino in Brisbane is a Filipino organisation celebrating Filipino music and culture through performances by local artists and community members.The goal of Sound of OPM is to raise funds that support Filipino artists, cultural groups, and community organisations in delivering high‑quality OPM performances and cultural programs. Contributions will help cover artist fees, production costs, venue hire, community workshops, and youth music initiatives that preserve and promote Original Pilipino Music. By reaching this goal, the campaign aims to strengthen cultural pride, expand opportunities for Filipino musicians, and bring the vibrant sound of OPM to broader audiences across the community.</textarea
-                    >
+                    {{ render_field(campaign_form.overview) }}
                   </div>
                   <div class="col-12">
-                    <label class="form-label" for="campaign-description"
-                      >Description</label
-                    >
-                    <textarea
-                      class="form-control"
-                      id="campaign-description"
-                      rows="4"
-                    >
-Honouring the soul of Filipino music through heartfelt performances, cultural connection, and the shared pride of OPM artists and fans.</textarea
-                    >
+                    {{ render_field(campaign_form.description) }}
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="campaign-location"
-                      >Location</label
+                  <div class="col-md-4">
+                    {{ render_field(campaign_form.location) }}
+                  </div>
+                  <div class="col-md-4">
+                    {{ render_field(campaign_form.event_date) }}
+                  </div>
+                  <div class="col-md-4">
+                    {{ render_field(campaign_form.goal_amount) }}
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="campaign-event_start_time"
+                      >Event start time</label
                     >
                     <input
                       class="form-control"
-                      id="campaign-location"
-                      type="text"
-                      value="The Tivoli - Fortitude Valley"
-                    />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="campaign-date"
-                      >Event date</label
-                    >
-                    <input
-                      class="form-control"
-                      id="campaign-date"
+                      id="campaign-event_start_time"
+                      name="campaign-event_start_time"
                       type="datetime-local"
-                      value="2026-08-22T19:00"
+                      value="{% if campaign.event_start_time %}{{ campaign.event_start_time.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
                     />
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="campaign-status"
-                      >Campaign status</label
+                  <div class="col-md-4">
+                    <label class="form-label" for="campaign-event_end_time"
+                      >Event end time</label
                     >
-                    <select class="form-select" id="campaign-status">
-                      <option selected>Pending</option>
-                      <option>Draft</option>
-                      <option>Active</option>
-                      <option>Paused</option>
-                      <option>Suspended</option>
-                    </select>
+                    <input
+                      class="form-control"
+                      id="campaign-event_end_time"
+                      name="campaign-event_end_time"
+                      type="datetime-local"
+                      value="{% if campaign.event_end_time %}{{ campaign.event_end_time.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                    />
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-4">
+                    {{ render_field(campaign_form.event_type) }}
+                  </div>
+                  <div class="col-12">
                     <label class="form-label" for="campaign-banner"
                       >Banner image</label
                     >
+                    {% if campaign.banner_image_url %}
+                    <div class="mb-2">
+                      <img
+                        src="{{ url_for('static', filename=campaign.banner_image_url) }}"
+                        alt="Current banner"
+                        class="img-fluid rounded"
+                        style="max-height: 120px"
+                      />
+                    </div>
+                    {% endif %}
                     <input
                       class="form-control"
                       id="campaign-banner"
+                      name="campaign-banner"
                       type="file"
-                      accept="image/*"
+                      accept=".png,.jpg,.jpeg,.gif,.webp"
                     />
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label" for="campaign-goal"
-                      >Fundraising goal</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input
-                        class="form-control"
-                        id="campaign-goal"
-                        type="number"
-                        value="50000"
-                        min="1"
-                        step="1"
-                      />
+                    <div class="form-text">
+                      Leave empty to keep the current banner.
                     </div>
                   </div>
                 </div>
                 <fieldset class="mt-4">
                   <legend class="section-title h4">Donor Tiers</legend>
+                  {% set edit_slots = edit_tiers_raw or tiers %} {% set
+                  edit_count = [4, edit_slots|length]|max %}
+                  <input
+                    type="hidden"
+                    name="campaign-tier_count"
+                    value="{{ edit_count }}"
+                  />
                   <div class="row g-3">
-                    <div class="col-md-6">
-                      <div class="tier-option">
-                        <label class="form-label" for="tier-bronze-name"
-                          >Tier level 1</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-bronze-name"
-                          type="text"
-                          value="Bronze"
-                        />
-                        <label class="form-label" for="tier-bronze-amount"
-                          >Amount</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-bronze-amount"
-                          type="number"
-                          value="20"
-                          min="1"
-                        />
-                        <label class="form-label" for="tier-bronze-benefit"
-                          >Recognition benefits</label
-                        >
-                        <textarea
-                          class="form-control"
-                          id="tier-bronze-benefit"
-                          rows="2"
-                        >
-Name listed on donor wall.</textarea
-                        >
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="tier-option">
-                        <label class="form-label" for="tier-silver-name"
-                          >Tier level 2</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-silver-name"
-                          type="text"
-                          value="Silver"
-                        />
-                        <label class="form-label" for="tier-silver-amount"
-                          >Amount</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-silver-amount"
-                          type="number"
-                          value="50"
-                          min="1"
-                        />
-                        <label class="form-label" for="tier-silver-benefit"
-                          >Recognition benefits</label
-                        >
-                        <textarea
-                          class="form-control"
-                          id="tier-silver-benefit"
-                          rows="2"
-                        >
-Support one free community tickets , receive event updates and name listed on donor wall.</textarea
-                        >
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="tier-option">
-                        <label class="form-label" for="tier-gold-name"
-                          >Tier level 3</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-gold-name"
-                          type="text"
-                          value="Gold"
-                        />
-                        <label class="form-label" for="tier-gold-amount"
-                          >Amount</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-gold-amount"
-                          type="number"
-                          value="100"
-                          min="1"
-                        />
-                        <label class="form-label" for="tier-gold-benefit"
-                          >Recognition benefits</label
-                        >
-                        <textarea
-                          class="form-control"
-                          id="tier-gold-benefit"
-                          rows="2"
-                        >
-Highlighted name on donor wall, acknowledgement in the event program and two  event tickets.</textarea
-                        >
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="tier-option">
-                        <label class="form-label" for="tier-platinum-name"
-                          >Tier level 4</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-platinum-name"
-                          type="text"
-                          value="Platinum"
-                        />
-                        <label class="form-label" for="tier-platinum-amount"
-                          >Amount</label
-                        >
-                        <input
-                          class="form-control mb-2"
-                          id="tier-platinum-amount"
-                          type="number"
-                          value="250"
-                          min="1"
-                        />
-                        <label class="form-label" for="tier-platinum-benefit"
-                          >Recognition benefits</label
-                        >
-                        <textarea
-                          class="form-control"
-                          id="tier-platinum-benefit"
-                          rows="2"
-                        >
-Highlighted name on donor wall, receive sponsor recognition, and four event tickets.</textarea
-                        >
-                      </div>
-                    </div>
+                    {% for n in range(1, edit_count + 1) %} {{
+                    tier_box('campaign', n, edit_slots[n - 1] if n <=
+                    edit_slots|length else none) }} {% endfor %}
                   </div>
+                  <p class="form-text mt-2 mb-0">
+                    Leave a tier completely empty to remove it. At least one
+                    tier is required.
+                  </p>
                 </fieldset>
                 <div class="d-flex flex-wrap gap-2 mt-4">
-                  <button class="btn btn-outline-secondary" type="button">
-                    Save Draft
+                  <button class="btn btn-search" type="submit">
+                    Save Changes
                   </button>
-                  <button class="btn btn-search" type="submit">Submit</button>
                 </div>
               </form>
             </details>
+            {% endif %}
           </div>
         </article>
 
+        {% if campaign %}
+        <!-- Posted updates -->
         <article class="fundraiser-panel mb-4">
           <div class="campaign-panel-heading">
             <h2 class="section-title">Posted Updates</h2>
@@ -447,72 +573,136 @@ Highlighted name on donor wall, receive sponsor recognition, and four event tick
                   <th scope="col">Campaign</th>
                   <th scope="col">Post title</th>
                   <th scope="col">Published</th>
-                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
+                {% for p in posts %}
                 <tr>
-                  <td>Sound of OPM</td>
-                  <td><strong>Local artists confirmed</strong></td>
-                  <td>12 Aug 2026</td>
+                  <td>{{ campaign.title }}</td>
                   <td>
-                    <span class="badge admin-badge-active">Published</span>
+                    <strong>{{ p.title }}</strong>
+                    <div class="small text-muted">{{ p.message }}</div>
+                    {% if p.image_path %}
+                    <img
+                      src="{{ url_for('static', filename=p.image_path) }}"
+                      alt="Image for {{ p.title }}"
+                      class="img-fluid rounded mt-2"
+                      style="max-height: 120px"
+                    />
+                    {% endif %}
+                  </td>
+                  <td>{{ p.createdDate.strftime('%d %b %Y') }}</td>
+                  <td>
+                    <details class="mb-2">
+                      <summary class="btn btn-sm btn-admin-action">
+                        Edit
+                      </summary>
+                      <form
+                        method="post"
+                        action="{{ url_for('main.campaign', campaign_id=campaign.id) }}"
+                        class="mt-2"
+                        style="min-width: 240px"
+                      >
+                        <input
+                          type="hidden"
+                          name="form_type"
+                          value="post_edit"
+                        />
+                        <input
+                          type="hidden"
+                          name="post_id"
+                          value="{{ p.id }}"
+                        />
+                        <input
+                          type="text"
+                          name="title"
+                          class="form-control mb-2"
+                          value="{{ p.title }}"
+                          maxlength="150"
+                          required
+                          aria-label="Post title"
+                        />
+                        <textarea
+                          name="message"
+                          class="form-control mb-2"
+                          rows="3"
+                          required
+                          aria-label="Post message"
+                        >
+{{ p.message }}</textarea
+                        >
+                        <button type="submit" class="btn btn-sm btn-search">
+                          Save
+                        </button>
+                      </form>
+                    </details>
+                    <form
+                      method="post"
+                      action="{{ url_for('main.campaign', campaign_id=campaign.id) }}"
+                      onsubmit="return confirm('Delete this post?');"
+                    >
+                      <input
+                        type="hidden"
+                        name="form_type"
+                        value="post_delete"
+                      />
+                      <input type="hidden" name="post_id" value="{{ p.id }}" />
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        Delete
+                      </button>
+                    </form>
                   </td>
                 </tr>
+                {% else %}
                 <tr>
-                  <td>Sound of OPM</td>
-                  <td><strong>Community rehearsal day</strong></td>
-                  <td>4 Aug 2026</td>
-                  <td>
-                    <span class="badge admin-badge-active">Published</span>
+                  <td colspan="4" class="text-muted">
+                    No updates yet. Publish your first one below.
                   </td>
                 </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
+
           <details class="campaign-form-details mt-4">
-            <summary class="btn btn-sm btn-admin-action">
-              Create / Edit Post
-            </summary>
-            <form class="campaign-edit-form mt-4" id="post-form-panel">
+            <summary class="btn btn-sm btn-admin-action">Create Post</summary>
+            <form
+              class="campaign-edit-form mt-4"
+              id="post-form-panel"
+              method="post"
+              enctype="multipart/form-data"
+              action="{{ url_for('main.campaign', campaign_id=campaign.id) }}"
+              novalidate
+            >
+              {{ post_form.hidden_tag() }}
+              <input type="hidden" name="form_type" value="post" />
               <div class="campaign-panel-heading">
                 <h3 class="section-title">Campaign Update Form</h3>
               </div>
               <div class="mb-3">
                 <label class="form-label" for="post-campaign">Campaign</label>
-                <select class="form-select" id="post-campaign" required>
-                  <option selected>Sound of OPM</option>
-                  <option>Masskara Festival in Brisbane</option>
-                  <option>Pinoy Christmas</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="post-title">Post title</label>
                 <input
                   class="form-control"
-                  id="post-title"
+                  id="post-campaign"
                   type="text"
-                  placeholder="Share a campaign update"
+                  value="{{ campaign.title }}"
+                  readonly
                 />
               </div>
-              <div class="mb-3">
-                <label class="form-label" for="post-content"
-                  >Update message</label
-                >
-                <textarea
-                  class="form-control"
-                  id="post-content"
-                  rows="4"
-                  placeholder="Write an update for your supporters"
-                ></textarea>
-              </div>
+              {{ render_field(post_form.title) }} {{
+              render_field(post_form.message) }}
               <div class="mb-3">
                 <label class="form-label" for="post-image">Upload image</label>
                 <input
                   class="form-control"
                   id="post-image"
+                  name="post-image"
                   type="file"
-                  accept="image/*"
+                  accept=".png,.jpg,.jpeg,.gif,.webp"
                 />
               </div>
               <button class="btn btn-search" type="submit">
@@ -522,6 +712,7 @@ Highlighted name on donor wall, receive sponsor recognition, and four event tick
           </details>
         </article>
 
+        <!-- Donation history -->
         <article class="fundraiser-panel mb-4">
           <div
             class="campaign-panel-heading d-flex justify-content-between align-items-center"
@@ -531,6 +722,26 @@ Highlighted name on donor wall, receive sponsor recognition, and four event tick
           <p class="small text-muted">
             Export or filter the list of donations by tier.
           </p>
+
+          {% set tier_names = ((tiers|map(attribute='name')|list) +
+          (donations|map(attribute='tier_name')|select|list))|unique|list %}
+          <div
+            class="campaign-management-toolbar d-flex flex-wrap gap-2 mb-3 align-items-center"
+          >
+            <label class="visually-hidden" for="donation-tier-filter"
+              >Filter donors by tier</label
+            >
+            <select
+              class="form-select campaign-filter-select"
+              id="donation-tier-filter"
+            >
+              <option selected>All Tiers</option>
+              {% for t in tier_names %}
+              <option>{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
           <div class="table-responsive">
             <table
               class="table align-middle donation-table mb-0"
@@ -539,25 +750,6 @@ Highlighted name on donor wall, receive sponsor recognition, and four event tick
               <caption class="visually-hidden">
                 Donation history with donor, amount, date, message and tier
               </caption>
-
-              <div
-                class="campaign-management-toolbar d-flex flex-wrap gap-2 mb-3 align-items-center"
-              >
-                <label class="visually-hidden" for="campaign-status-filter"
-                  >Filter donors by tier</label
-                >
-                <select
-                  class="form-select campaign-filter-select"
-                  id="campaign-status-filter"
-                >
-                  <option selected>All Tiers</option>
-                  <option>Bronze</option>
-                  <option>Silver</option>
-                  <option>Gold</option>
-                  <option>Platinum</option>
-                </select>
-              </div>
-
               <thead>
                 <tr>
                   <th scope="col">Donor</th>
@@ -568,38 +760,61 @@ Highlighted name on donor wall, receive sponsor recognition, and four event tick
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Garyn</td>
-                  <td>$100</td>
-                  <td>20 Aug</td>
-                  <td>Have so much fun!</td>
-                  <td>Gold</td>
+                {% for d in donations %}
+                <tr data-tier="{{ (d.tier_name or '')|lower }}">
+                  <td>{{ 'Anonymous' if d.is_anonymous else d.donor_name }}</td>
+                  <td>{{ money(d.amount) }}</td>
+                  <td>{{ d.created_at.strftime('%d %b') }}</td>
+                  <td>{{ d.message }}</td>
+                  <td>{{ d.tier_name }}</td>
                 </tr>
+                {% else %}
                 <tr>
-                  <td>Anonymous</td>
-                  <td>$50</td>
-                  <td>18 Aug</td>
-                  <td>Keep the music playing.</td>
-                  <td>Silver</td>
+                  <td colspan="5" class="text-muted">No donations yet.</td>
                 </tr>
-                <tr>
-                  <td>Sandy</td>
-                  <td>$250</td>
-                  <td>15 Aug</td>
-                  <td>Supporting local artists.</td>
-                  <td>Platinum</td>
-                </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
           <div class="admin-status-actions ms-xl-auto">
-            <button class="btn btn-sm btn-admin-action" type="button">
-              Export CSV
-            </button>
+            <a
+              class="btn btn-sm btn-admin-action"
+              href="{{ url_for('main.export_donations', campaign_id=campaign.id) }}"
+              >Export CSV</a
+            >
           </div>
         </article>
+        {% endif %}
       </div>
     </div>
   </section>
-</main>
+</div>
+
+<script>
+  // Client-side filters for the campaign list (by status) and donation history (by tier)
+  (function () {
+    function wireFilter(selectId, rowSelector, attribute) {
+      var select = document.getElementById(selectId);
+      if (!select) return;
+      select.addEventListener("change", function () {
+        var wanted = select.value.toLowerCase();
+        var showAll = wanted.indexOf("all") === 0;
+        document.querySelectorAll(rowSelector).forEach(function (row) {
+          if (!row.hasAttribute(attribute)) return;
+          row.hidden = !(showAll || row.getAttribute(attribute) === wanted);
+        });
+      });
+    }
+    wireFilter(
+      "campaign-status-filter",
+      "#campaign-table tbody tr",
+      "data-status",
+    );
+    wireFilter(
+      "donation-tier-filter",
+      "#donation-history-table tbody tr",
+      "data-tier",
+    );
+  })();
+</script>
 {% endblock %}
