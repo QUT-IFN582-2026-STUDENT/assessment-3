@@ -74,10 +74,10 @@ class DonationPaymentType(Enum):
 @dataclass
 class UserInfo:
     id: str
-    firstname: str
-    surname: str
-    email: str
-    phone: str
+    firstname: Optional[str] = None
+    surname: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
     organisation: Optional['Organisation'] = None
     account_status: AccountStatus = AccountStatus.ACTIVE
     role: AccountRole = AccountRole.SUPPORTER

@@ -738,3 +738,8 @@ body {
   margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
 }
+
+.campaign-filter-select {
+  width: 250px;
+  max-width: 100%;
+}

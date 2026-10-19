@@ -137,6 +137,7 @@ def read_tiers(prefix):
 
 # Home 
 @bp.route('/')
+@bp.route('/home/')
 def index():
     campaigns = db.search_campaigns('','',)
     return render_template(

@@ -56,18 +56,19 @@ def submit_donation(
     is_anonymous: bool,
 ) -> None:
     
-    account = db.get_account_info(account_id)
+    user = UserInfo(id=account_id)
     tier = next(
         (tier for tier in campaign.tiers if str(tier.id) == tier_id),
         None,
     )
+   
   
     payment_type = DonationPaymentType.find_by_value(payment_value) 
     
     db_donation.add_donation(Donation(
         id=0,
         amount=amount,
-        account=account,
+        account=user,
         campaign=campaign,
         tier=tier,
         notes=notes,
