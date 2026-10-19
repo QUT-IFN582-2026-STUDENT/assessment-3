@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms.fields import BooleanField, DateField, DecimalField, IntegerField, SelectField, SubmitField, StringField, PasswordField, TextAreaField
+from wtforms.fields import BooleanField, DateField, DecimalField, SelectField, SubmitField, StringField, PasswordField, TextAreaField
 from wtforms.validators import InputRequired, NumberRange, Optional, email
 
-from .models import CampaignEventType
+from .models import CampaignEventType, DonationPaymentType
 
 
 class LoginForm(FlaskForm):
@@ -27,11 +27,22 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Make Account")
 
 class DonationForm(FlaskForm):
-    donation_amount = IntegerField('Donation amount (AUD)', validators=[InputRequired(), NumberRange(min=1, max=99999999)])
+    donation_amount = DecimalField(
+        'Donation amount (AUD)',
+        places=2,
+        validators=[InputRequired(), NumberRange(min=1, max=99999999)],
+    )
     support_level = SelectField('Donor tier', choices=[], validators=[InputRequired()])
     donor_message = TextAreaField('Message', validators=[Optional()])
     anonymous_donation = BooleanField('Make my donation anonymous')
-    donation_payment = SelectField('Payment Method', choices=[('Credit Card', 'Credit Card'), ('Paypal', 'PayPal'), ('Google Pay', 'Google Pay')], validators=[InputRequired()])
+    donation_payment = SelectField(
+        'Payment Method',
+        choices=[
+            (payment_type.value, payment_type.value)
+            for payment_type in DonationPaymentType
+        ],
+        validators=[InputRequired()],
+    )
     submit = SubmitField('Submit Donation')
 
 

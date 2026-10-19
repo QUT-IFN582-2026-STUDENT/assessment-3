@@ -58,11 +58,17 @@ class ReportStatus(Enum):
 
 class DonationPaymentType(Enum):
     CREDIT_CARD = 'Credit Card'
-    PAYPAL = 'Paypal'
+    PAYPAL = 'PayPal'
     GOOGLE_PAY = 'Google Pay'
 
     def __str__(self):
         return self.value
+
+    def find_by_value(value):
+        for payment_type in DonationPaymentType:
+            if payment_type.value == value:
+                return payment_type
+        return DonationPaymentType.CREDIT_CARD
 
 
 @dataclass

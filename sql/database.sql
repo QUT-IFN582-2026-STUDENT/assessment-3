@@ -114,7 +114,7 @@ CREATE TABLE donations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     notes TEXT,
     receiptId VARCHAR(100) NOT NULL,
-    paymentType  ENUM('Credit Card', 'Paypal', 'Google Pay') DEFAULT 'Credit Card',
+    paymentType  ENUM('Credit Card', 'PayPal', 'Google Pay') DEFAULT 'Credit Card',
     accountId INT,
     campaignId INT,
     tierId INT,
@@ -415,18 +415,18 @@ VALUES
  CONCAT(CURDATE(), ' 19:30:00') - INTERVAL 1 DAY);
 
 
--- Posts for campaignid 2
+-- Posts for campaignid 6
 INSERT INTO posts ( campaignId, title, message, image_path, createdDate)
 VALUES
-(2, 'Venue Preparation Underway',
+(6, 'Venue Preparation Underway',
  'HOTA is being set up for an unforgettable Rinascita Sonora Night.',
  'img/pexels-violins-1838390_1920.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 5 DAY),
-(2, 'Artist Rehearsals',
+(6, 'Artist Rehearsals',
  'Our performers delivered an incredible rehearsal — the energy is unreal.',
  'img/yannazazu-orchestra-2098877_1920.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 2 DAY),
-(2, 'Final Technical Check',
+(6, 'Final Technical Check',
  'Sound and lighting checks are complete. Everything is ready for tonight!',
  'img/pexels-vietfotos-18238104.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 1 DAY);
@@ -439,4 +439,3 @@ VALUES
  CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
 (2,2, 'Inappropriate content', 'Action Taken', 6,
  CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY);
-

@@ -275,7 +275,7 @@ def get_public_campaign(campaign_id=None):
         ) supporter_count ON supporter_count.campaignId = c.id
 
         WHERE c.status = 'Active' {campaign_filter}
-        ORDER BY c.isFeatured DESC, c.publishDate DESC, c.id DESC
+        ORDER BY c.isFeatured DESC, c.eventDate ASC, c.id DESC
         LIMIT 1;
 
         """,

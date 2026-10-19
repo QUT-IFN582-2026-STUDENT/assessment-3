@@ -16,14 +16,6 @@ from .models import (
 _reports: list[Report] = []
 
 
-def get_campaign(campaign_id: Optional[int]) -> Optional[Campaign]:
-    return db_campaign.get_public_campaign(campaign_id)
-
-
-def get_account_info(account_id) -> Optional[UserInfo]:
-    return db.get_account_info(account_id)
-
-
 def get_posts(campaign_id) -> list[Post]:
     cursor = mysql.connection.cursor()
     try:

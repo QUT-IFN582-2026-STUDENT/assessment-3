@@ -201,7 +201,7 @@
                   <div class="input-group mb-3">
                     <span class="input-group-text">$</span>
                     {{ donation_form.donation_amount(class="form-control",
-                    min="1") }}
+                    min="10", step="0.01") }}
                   </div>
                   {{ donation_form.support_level.label(class="form-label") }}{{
                   donation_form.support_level(class="form-select mb-3") }} {{
