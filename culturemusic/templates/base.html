@@ -64,20 +64,21 @@
               </li>
               {% endif %}
             </ul>
+
+
             {# ---------------------------------------------------------------------------------  
-              Search Functionality/Feature - AK
-                MVC area = VIEW. This form has no connection to the database, and only collects
-                the search criteria and sends it to the controller.
-                "get" method: the criteria values are in the url
-                action: builds the url of the search route in view.py     
+              Search Functionality / Feature Section
+              MVC area = VIEW
+              Collects search criteria and sends it ot th econtroller
+              It builds the url of the search route in views.py
             #}
 
             <form class="search-form d-flex flex-wrap gap-2 align-items-center" role="search"
                   method="get" action="{{ url_for('main.search') }}">
               
-              {# name = "keyword" added as the browser will only send inputs that have a name.
-                  the keyword must also match the field name in SearchForms (forms.py) #}
-              
+            {# name = the "keyword" added as the browser will only send inputs that have a name associated with them
+             the keyword must also match the field name which is in SearchForms (forms.py)
+            #}
               <input
                 class="form-control search-input"
                 type="search"
@@ -86,19 +87,19 @@
                 placeholder="Search Events"
                 aria-label="Search Events" />
 
-              {# The location dropdown was replaced with the event type dropdown. The eventtype
-                must match the field name in SearchForm- and the dropdown values must also match 
-                the database values. #}
-              
+              {# The location dropdown has been replaced with the event type dropdown field
+                 The eventtype must also match the field name in SearchForm, and the dropdown values must also match 
+                 the database values
+              #}
               <select class="form-select filter-select gap-2" name="event_type" aria-label="Choose event type">
                 <option value="">All event types</option>
                 <option value="Free" {% if request.args.get('event_type') == 'Free' %}selected{% endif %}>Free</option>
                 <option value="Ticketed" {% if request.args.get('event_type') == 'Ticketed' %}selected{% endif %}>Ticketed</option>
               </select>
               
-              {# End of the Search feature changes #} 
-              {# --------------------------------------------------------------------------------#}
-              
+              {# End of the Search feature functionality changes  
+               ----------------------------------------------------------------------------------------------------------------------
+              #}
               
               <div class="d-flex px-2 gap-2">
                 <button class="btn btn-search" type="submit">Search</button>

@@ -135,11 +135,12 @@ def read_tiers(prefix):
 
 
 
-# Home 
+# Home page
 @bp.route('/')
 @bp.route('/index/')
 def index():
-    campaigns = db.search_campaigns('','',)
+    campaigns = db.search_campaigns('','',) #search all active campaigns
+
     return render_template(
             'index.html',
             searched=True,
@@ -153,37 +154,36 @@ def index():
 *********************************************************************************
 Search Functionality
 MVC = Controller
-Flow:
-1 - receives the request once the user clocks the "Search" button in the nav bar
-2 - checks the inputs with SearchForm (found in forms.py)
-3 - asks the model (db.search_campaigns in db.py) for matching cmapaigns
-4 - then hands the results to views.py to display
-Importantly, this route has no SQL or html in it. The criteria appear in
+Flow is:
+1 - Receives the request once the user selects the "Search" button in the nav bar
+2 - Checks the inputs with SearchForm (which are found in forms.py)
+3 - Asks the model (db.search_campaigns found in db.py) for matching cmapaigns
+4 - Then hands the results to views.py to display them
+
+Importantly, this route has no SQL or html in it. Also, the criteria appear in
 the URL, so a search can be bookmarked or refreshed.
 '''
 @bp.route('/search/')
 def search():
-    # Load the form with the values from the URL query string.
-    # request.args = values sent with GET (request.form would be POST data).
+    # Load the form with the values from the URL query string
+    # request.args = values sent with GET (request.form would be POST data)
     search_form = SearchForm(request.args)
 
-    # Start with "no results" so the page still works if validation fails.
+    # Start with "no results"so the page still works if the search validation fails
     campaigns = []
 
     # validate() - this is to check the rules which are declared in searchform
-    #   rule = keyword at most is 200 characters in length, event_type is one of the allowed choices
+    # The rule is that the keyword is at most 200 characters in length, and the event_type is one of the allowed choices
     
     if search_form.validate():
-        # This passes the two criteria to the MODEL. This returns a list of objects (models.py)
-        # related to active campaigns only.
-        # the "or ''" part turns a missing value (None, e.g. someone opens /search/
-        # with nothing in the URL) into an empty string, and strip() removes stray spaces.
+        # This passes the two criteria to the Model, this returns a list of objects (models.py)
+        # the "or ''" part turns a missing value (None, e.g. someone opens /search/ with nothing in the URL) into an empty string, and strip() removes the stray spaces
         campaigns = db.search_campaigns(
             (search_form.keyword.data or '').strip(),
             search_form.event_type.data or '',
         )
 
-    # Pass everything the VIEW needs to index.html:
+    # This passes everything the VIEW needs to index.html:
     #   searched - True, so index.html shows the Search Results section
     #   campaigns -the list of Campaign objects to display
     #   search_form - the criteria (for the summary line) and any errors
@@ -219,8 +219,7 @@ def campaign():
     new_form = CampaignForm(prefix='new')             # create a new campaign
     post_form = PostForm(prefix='post')
 
-    # Status is changed through its own dropdown (admin rules apply), so it must not
-    # be a required field on the create / edit forms.
+    # Status is changed through its own dropdown (admin rules apply), so it must not be a required field on the create / edit forms.
     for form in (campaign_form, new_form):
         if hasattr(form, 'status'):
             del form.status
@@ -237,7 +236,7 @@ def campaign():
 
     form_type = request.form.get('form_type') if request.method == 'POST' else None
 
-    # --- Create a new campaign (starts as 'pending' until an admin approves it) ---
+    # Create a new campaign (starts as 'pending' until an admin approves it)
     if form_type == 'create':
         if new_form.validate_on_submit():
             try:
@@ -267,7 +266,7 @@ def campaign():
         else:
             flash('Please check the new campaign details.', 'error')
 
-    # --- Edit the selected campaign ---
+    # Edit the selected campaign
     elif form_type == 'campaign' and selected:
         if campaign_form.validate_on_submit():
             try:
@@ -300,7 +299,7 @@ def campaign():
         else:
             flash('Please check the submitted details.', 'error')
 
-    # --- Change operational status (active / paused / closed only) ---
+    # Change operational status (active / paused / closed only)
     elif form_type == 'status' and selected:
         requested = request.form.get('status', '')
         if requested not in cm.FUNDRAISER_STATUSES:
@@ -312,7 +311,7 @@ def campaign():
                   '(pending, rejected or suspended) and cannot be changed.', 'error')
         return redirect(url_for('main.campaign', campaign_id=selected['id']))
 
-    # --- Publish a post / update (optional image) ---
+    # Publish a post / update (optional image)
     elif form_type == 'post' and selected:
         if post_form.validate_on_submit():
             try:
@@ -327,7 +326,7 @@ def campaign():
         else:
             flash('Please check the submitted details.', 'error')
 
-    # --- Edit an existing post ---
+    # Edit an existing post
     elif form_type == 'post_edit' and selected:
         title = request.form.get('title', '').strip()
         message = request.form.get('message', '').strip()
@@ -340,7 +339,7 @@ def campaign():
             flash('Post not found.', 'error')
         return redirect(url_for('main.campaign', campaign_id=selected['id']))
 
-    # --- Delete a post ---
+    # Delete a post
     elif form_type == 'post_delete' and selected:
         post_id = request.form.get('post_id', type=int)
         if post_id is not None and cm.delete_post(post_id, user_id):
@@ -349,7 +348,7 @@ def campaign():
             flash('Post not found.', 'error')
         return redirect(url_for('main.campaign', campaign_id=selected['id']))
 
-    # --- Delete the selected campaign (only if it has no donations) ---
+    # Delete the selected campaign (only if it has no donations)
     elif form_type == 'campaign_delete' and selected:
         if cm.delete_campaign(selected['id'], user_id):
             flash('Campaign deleted.')

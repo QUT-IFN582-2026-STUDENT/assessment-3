@@ -40,25 +40,13 @@ Join events, engage with different cultures, and help build a community where he
         </div>
       </section>
 
- {# ===================== SEARCH FEATURE - NEW SECTION (16 Oct 2026) =====================
-         MVC role: VIEW. Displays the search results. It has no SQL and no
-         database connection: it only shows the data the controller passed in.
-
-         Variables passed in by the search() route in views.py:
-           searched     True when this page was produced by a search.
-                        The normal home page route index() does not pass it,
-                        so on a normal visit it is undefined (= false) and this
-                        whole section is skipped.
-           campaigns    list of Campaign dataclass objects (models.py),
-                        returned by db.search_campaigns() in db.py.
-           search_form  the SearchForm: criteria the user chose, plus any errors.
-         ===================================================================================== #}
-
-      {# Search Functionality
-          MVC = View
-          This page displays teh search results and has no SQL and no dtabase connection at all. 
-          It displays only the data that the controller passed to it.
-      #}
+{#-------------------------------------------------------------------------------------------------------
+ Search Functionality section
+ MVC alignment = views
+ This section displays the search results.
+ It receives variables from the search route in views.py
+ Includes: searched, camapigns and search_form
+#}
 
 {% if searched %}
 <section class="featured-section">
@@ -78,7 +66,7 @@ Join events, engage with different cultures, and help build a community where he
             </div>
             
             {% if search_form.errors %}
-            {# CASE 1: Search Form Rule broken: the input broke a rule, so no search was run #}
+            {# If the input broke a rule #}
             <div class="alert alert-warning" role="alert">
               {% for field_name, messages in search_form.errors.items() %}
                 {% for message in messages %}
@@ -88,21 +76,18 @@ Join events, engage with different cultures, and help build a community where he
             </div>
 
             {% elif campaigns %}
-            {# CASE 2: one or more campaigns matched.
-               Summary line, e.g.: 2 campaign(s) found for "night" (Free). Jinja escapes {{ }} output
-               automatically, so typed text is shown as plain text and cannot run as HTML or script. #}
+            {# If one or more campaigns matched the search criteria then explains how many found #}
             <p>
               {{ campaigns | length }} campaign(s) found
               {% if search_form.keyword.data %} for "{{ search_form.keyword.data }}"{% endif %}
               {% if search_form.event_type.data %} ({{ search_form.event_type.data }}){% endif %}.
             </p>
              <div class="row">
-              {# Loop: one card per Campaign object. "c" is one Campaign. c.title, c.location etc. 
-                are the @property methods of the existing Campaign dataclass in models.py. #}
+              {# One card per campaign object #}
               {% for c in campaigns %}
               <div class="col-md-6 col-lg-3 mb-4">
                 <article class="card h-100 fundraiser-panel">
-                  {# Banner image, only if the campaign has one. banner_image_url is a path inside /static, e.g. img/x.jpg #}
+                  {# Displays the banner image if the campaign has one. banner_image_url is a path inside /static, (example = img/x.jpg) #}
                   {% if c.banner_image_url %}
                   <div class="card-image">
                     <img
@@ -114,7 +99,7 @@ Join events, engage with different cultures, and help build a community where he
                   <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ c.title }}</h5>
                     {% if c.event_date %}
-                    {# event_time is an existing Campaign property: "6:00 pm - 9:00 pm" #}
+                    {# the event_time is an existing campaign property: (example = 6:00 pm - 9:00 pm) #}
                     <p class="card-text">{{ c.event_date.strftime('%d %B %Y') }} {{ c.event_time }}</p>
                     {% endif %}
                     <p class="card-text">{{ c.location }}</p>
@@ -126,7 +111,7 @@ Join events, engage with different cultures, and help build a community where he
                       ${{ '{:,.0f}'.format(c.amount_raised) }} of ${{ '{:,.0f}'.format(c.goal_amount) }}
                       ({{ c.progress_percentage }}%)
                     </div>
-                    {# View opens the existing public campaign/donation page. #}
+                    {# the view command opens the existing public campaign donation page #}
                     <a class="btn btn-view mt-auto"
                        href="{{ url_for('bp_donation.donation', campaign_id=c.id) }}">View</a>
                   </div>
@@ -135,15 +120,17 @@ Join events, engage with different cultures, and help build a community where he
               {% endfor %}
             </div>
 			 {% else %}
-            {# CASE 3: valid search but nothing matched. #}
+            {# If a valid search is conducted and nothing matched #}
             <p>No campaigns matched your search. Try another keyword or choose All event types.</p>
             {% endif %}
           </article>
         </div>
       </section>
 	  {% endif %}
-      {# End of the Search Functionality Section #}
-	  
+    {# End of the Search Functionality Section
+      -------------------------------------------------------------------------------------------------------
+	  #}
+
 	   <!-- Featured Fundraisers -->
       <section class="featured-section">
         <div class="container-fluid">

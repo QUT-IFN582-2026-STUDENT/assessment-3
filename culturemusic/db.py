@@ -217,7 +217,7 @@ MVC = Model
 Everything that talks to the database lives in this .py.
 The controller (views.py search route) calls the search_campaigns(), with the
 view (index.html) only ever receiving the the final campaign objects as requested.
-The html pages never see SQL directly and they never connect to the database.
+The html pages never see SQL directly and they never connect to the database, this is a big no-no.
 
 '''
 
@@ -227,21 +227,21 @@ from .models import CampaignEventType   # new import
 
 def search_campaigns(keyword, event_type):
     """
-    Find public campaigns by the title keyword input and/or the event type dropdown selection.
+    This function finds public campaigns by the title keyword input and/or the event type dropdown selection
 
-    This function is called by views.py-search() route
-    The function recieves:
-        1 - keyword (text typed in the search box ('' = any title))
-        2 - event_type ('Free', 'Ticketed', or '' (= any event type))
+    This function is called by the views.py-search() route
+    The function recieves  both the :
+        keyword (text typed in the search box ('' = any title)), and 
+        event_type ('Free', 'Ticketed', or '' (= any event type))
     
-    The function returns:
-        1 - a list of Campaign dataclass objects (models.py), which are then passed back
-        to the route, which then passes them to index.html.
+    The function returns a list of campaign dataclass objects (models.py), which are then passed back
+    to the route, which then passes them to index.html
+
     """
-    # Step 1 - SQL build
-    # Only the 'Active' campaigns are public. Pending, Paused, Suspended, Rejected,
-    # Draft and Closed campaigns will never appear in a public search. The JOINs fetch the 
-    # organisation and the creating account, because the existing Campaign dataclass needs
+    # SQL build
+    # Only the 'Active' campaigns are made public. (Status = Pending, Paused, Suspended, Rejected.
+    # The Draft and Closed campaigns will never appear in a public search function. 
+    # The jons will fetch the organisation and the creating account, because the existing Campaign dataclass needs
     # an Organisation and a UserAccount.
     sql = """
         SELECT c.id, c.title, c.goalAmount, c.amountRaised, c.status,
@@ -257,29 +257,32 @@ def search_campaigns(keyword, event_type):
         JOIN accounts a ON a.id = c.createdBy
         WHERE c.status = 'Active'
     """
+
+
     # Params Variable
-    # params variable holds the values input by the user. They are sent to MySQL seperately 
-    # from the SQL text (each %s is a placeholder). MySQL treats them as plain data,
-    # never as SQL commands. This is what prevents SQL injection
+    # The params variable will hold the values which are input by the user. 
+    # They are sent to MySQL seperately from the SQL text (each %s is a placeholder).
+    # MySQL treats them as plain data, never as SQL commands. 
+    # This is what prevents SQL injection - very important
     params = []
 
-    # Keyword filter (only if something was typed)
-    # Eg. '%night%' means "title contains night" anywhere in the title
+
+    # Keyword filter (applies only if something was typed)
     # The database collation is case-insensitive
     if keyword:
         sql = sql + " AND c.title LIKE %s"
         params.append('%' + keyword + '%')
 
-    # Event type filter (only if a type was chosen in the dropdown).
+    # Event type filter (only if a type was chosen by the user in the dropdown)
     if event_type:
         sql = sql + " AND c.eventType = %s"
         params.append(event_type)
 
-    # Soonest event first.
+    # This specifies the soonest/closest event first
     sql = sql + " ORDER BY c.eventDate, c.title"
 
-    # Step 2 - query is run
-    # Same cursor pattern as the existing functions in this file
+    # Run the query
+    # Applies the same cursor pattern as the existing functions in this file
     cursor = mysql.connection.cursor()
     try:
         cursor.execute(sql, params)
@@ -287,8 +290,8 @@ def search_campaigns(keyword, event_type):
     finally:
         cursor.close()
 
-    # Step 3 - each database row is turned into the EXISTING dataclasses
-    # Organisation, UserInfo, UserAccount and Campaign all come from models.py.
+    # Dtabase rows turned into data classes
+    # Organisation, UserInfo, UserAccount and Campaign all come from models.py
     campaigns = []
     for row in rows:
         organisation = Organisation(
