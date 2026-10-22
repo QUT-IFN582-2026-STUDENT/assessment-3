@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms.fields import BooleanField, DateField, DecimalField, SelectField, SubmitField, StringField, PasswordField, TextAreaField
+from wtforms.fields import BooleanField, DateField, DecimalField, HiddenField, SelectField, SubmitField, StringField, PasswordField, TextAreaField
 from wtforms.validators import InputRequired, NumberRange, Optional, email
 
 from .models import CampaignEventType, DonationPaymentType
@@ -27,6 +27,8 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Make Account")
 
 class DonationForm(FlaskForm):
+    campaign_id = HiddenField()
+    account_id = HiddenField()
     donation_amount = DecimalField(
         'Donation amount (AUD)',
         places=2,
@@ -43,6 +45,7 @@ class DonationForm(FlaskForm):
         ],
         validators=[InputRequired()],
     )
+
     submit = SubmitField('Submit Donation')
 
 

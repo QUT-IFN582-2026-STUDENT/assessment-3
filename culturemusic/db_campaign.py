@@ -264,8 +264,8 @@ def get_public_campaign(campaign_id=None):
             creator_org.description AS creator_org_description
 
         FROM campaigns c
-        JOIN organisations o ON o.id = c.orgId
-        JOIN accounts a ON a.id = c.createdBy
+        INNER JOIN organisations o ON o.id = c.orgId
+        INNER JOIN accounts a ON a.id = c.createdBy
         LEFT JOIN organisations creator_org ON creator_org.id = a.orgId
 
         LEFT JOIN (

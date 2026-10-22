@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-import uuid
 from typing import List, Optional, Tuple
 from . import db, db_donation, db_campaign
+from .forms import DonationForm
 from .models import (
     Campaign,
     Donation,
-    DonationPaymentType,
     Post,
+    Tier,
     UserInfo,
 )
 
@@ -34,45 +34,13 @@ def get_donation_page(campaign_id: Optional[int],account_id: Optional[int] = Non
     return DonationPage(
         campaign=campaign,
         posts=db_donation.get_posts(campaign.id),
-        donations=db_donation.get_donations(campaign.id, campaign),
+        donations=db_donation.get_donations(campaign.id),
         user=user,
     )
 
 
-def get_tier_choices(campaign: Campaign) -> List[Tuple[str, str]]:
+def get_tier_choices(tiers: List[Tier]) -> List[Tuple[str, str]]:
     return [
         (str(tier.id), f"{tier.name} - ${tier.amount:,.0f}")
-        for tier in campaign.tiers
+        for tier in tiers
     ]
-
-
-def submit_donation(
-    campaign: Campaign,
-    account_id,
-    amount: float,
-    tier_id: str,
-    notes: str,
-    payment_value: str,
-    is_anonymous: bool,
-) -> None:
-    
-    user = UserInfo(id=account_id)
-    tier = next(
-        (tier for tier in campaign.tiers if str(tier.id) == tier_id),
-        None,
-    )
-   
-  
-    payment_type = DonationPaymentType.find_by_value(payment_value) 
-    
-    db_donation.add_donation(Donation(
-        id=0,
-        amount=amount,
-        account=user,
-        campaign=campaign,
-        tier=tier,
-        notes=notes,
-        receipt_id=uuid.uuid4().hex,
-        payment_type=payment_type,
-        is_anonymous=is_anonymous,
-    ))

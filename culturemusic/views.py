@@ -39,7 +39,7 @@ def fundraiser_required(view):
     return wrapped
 
 
-def save_image(file_storage, directory='uploads'):
+def save_image(file_storage, directory='img'):
     """Save an uploaded image and return its web path, or '' if there is none."""
     if not file_storage or not file_storage.filename:
         return ''
@@ -137,7 +137,7 @@ def read_tiers(prefix):
 
 # Home 
 @bp.route('/')
-@bp.route('/home/')
+@bp.route('/index/')
 def index():
     campaigns = db.search_campaigns('','',)
     return render_template(

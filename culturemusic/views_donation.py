@@ -1,14 +1,13 @@
 from decimal import Decimal
 from functools import wraps
 
+import MySQLdb
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
-from culturemusic import db_donation
-
-from . import db_campaign
+from . import db_donation
 from . import models_donation
 from .forms import DonationForm
-from .models import AccountRole, Campaign, Report, ReportType
+from .models import AccountRole
 
 
 bp_donation = Blueprint('bp_donation', __name__)
@@ -55,8 +54,10 @@ def donation(campaign_id):
         abort(404)
 
     donation_form = DonationForm(prefix='donation')
-    donation_form.support_level.choices = models_donation.get_tier_choices(
-        page.campaign
+
+    if page.user is not None:
+        donation_form.support_level.choices = models_donation.get_tier_choices(
+        page.campaign.tiers
     )
     if page.campaign.tiers:
         first_tier = page.campaign.tiers[0]
@@ -76,35 +77,29 @@ def donation(campaign_id):
 @bp_donation.post('/donation/<int:campaign_id>/submit/')
 @supporter_required
 def submit_donation(campaign_id):
-
-    campaign = db_campaign.get_public_campaign(campaign_id)
-
-    if campaign is None:
-           abort(404)
+    
+    account_id = session.get('user_id')
+    if campaign_id is None or account_id is None:
+        abort(404)
 
     donation_form = DonationForm(prefix='donation')
-    donation_form.support_level.choices = models_donation.get_tier_choices(campaign)
-    
+    donation_form.support_level.choices = models_donation.get_tier_choices(db_donation.get_tiers_by_campaign(campaign_id))
+
+    donation_form.campaign_id.data = int(campaign_id)
+    donation_form.account_id.data = int(account_id)
+
     if not donation_form.validate_on_submit():
-        flash('Please check the submitted details.', 'error')
-        return redirect(url_for('bp_donation.donation', campaign_id=campaign.id))
+        flash('Please check the form submitted.', 'error')
+        return redirect(url_for('bp_donation.donation', campaign_id=campaign_id))
 
     try:
-        models_donation.submit_donation(
-            campaign=campaign,
-            account_id=session.get('user_id'),
-            amount=donation_form.donation_amount.data,
-            tier_id=donation_form.support_level.data,
-            notes=donation_form.donor_message.data or '',
-            payment_value=donation_form.donation_payment.data,
-            is_anonymous=donation_form.anonymous_donation.data,
-        )
-    except ValueError as error:
-        flash(str(error), 'error')
-        return redirect(url_for('bp_donation.donation', campaign_id=campaign.id))
+        db_donation.add_donation(donation_form)
+    except MySQLdb.Error:
+        flash('Issue saving your donation. Please try again.', 'error')
+        return redirect(url_for('bp_donation.donation', campaign_id=campaign_id))
 
-    flash(f'Thank you for supporting {campaign.title}!')
-    return redirect(url_for('bp_donation.donation', campaign_id=campaign.id))
+    flash('Thank you for donating, we appreciate your support!')
+    return redirect(url_for('bp_donation.donation', campaign_id=campaign_id))
 
 
 @bp_donation.post('/posts/<int:post_id>/report/')

@@ -132,14 +132,14 @@ class Campaign:
     _overview: str
     _description: str
     _banner_image_url: str 
-    _created_by: UserAccount
-    _organisation: Organisation
+    _created_by: UserAccount = None
     _event_type: CampaignEventType = CampaignEventType.FREE
     _is_featured: bool = False
     _tiers: List[Tier] = field(default_factory=list)
     _created_date: datetime = field(default_factory=datetime.now)
     _updated_date: datetime = field(default_factory=datetime.now)
     _publish_date: Optional[datetime] = None
+    _organisation: Optional[Organisation] = None
     supporter_count: int = 0
     visitor_count: int = 0
 

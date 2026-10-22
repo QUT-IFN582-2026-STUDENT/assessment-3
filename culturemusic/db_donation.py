@@ -1,7 +1,8 @@
+import uuid
 from typing import Optional
 
 import MySQLdb
-
+from .forms import DonationForm
 from . import db, db_campaign, mysql
 from .models import (
     Campaign,
@@ -10,28 +11,18 @@ from .models import (
     Post,
     Report,
     Tier,
-    UserInfo,
 )
 
-_reports: list[Report] = []
 
 
 def get_posts(campaign_id) -> list[Post]:
-    cursor = mysql.connection.cursor()
-    try:
-        cursor.execute(
-            """
-            SELECT id, title, message, image_path, createdDate
-            FROM posts
-            WHERE campaignId = %s
-            ORDER BY createdDate DESC, id DESC
-            """,
-            (campaign_id,),
-        )
-        rows = cursor.fetchall()
-    finally:
-        cursor.close()
-
+    rows = db_campaign.query(
+        """
+        SELECT id, title, message, image_path, createdDate
+        FROM posts
+        WHERE campaignId = %s
+        ORDER BY createdDate DESC, id DESC
+        """, (campaign_id,))
     return [
         Post(
             id=row['id'],
@@ -44,7 +35,7 @@ def get_posts(campaign_id) -> list[Post]:
     ]
 
 
-def get_donations(campaign_id, campaign: Campaign) -> list[Donation]:
+def get_donations(campaign_id: int) -> list[Donation]:
     cursor = mysql.connection.cursor()
     try:
         cursor.execute(
@@ -61,8 +52,8 @@ def get_donations(campaign_id, campaign: Campaign) -> list[Donation]:
                    o.id AS account_org_id, o.name AS account_org_name,
                    o.description AS account_org_description
             FROM donations d
-            LEFT JOIN accounts a ON a.id = d.accountId
-            LEFT JOIN organisations o ON o.id = a.orgId
+            INNER JOIN accounts a ON a.id = d.accountId
+            INNER JOIN organisations o ON o.id = a.orgId
             LEFT JOIN tiers t ON t.id = d.tierId
             WHERE d.campaignId = %s
             ORDER BY d.createdDate DESC, d.id DESC
@@ -88,8 +79,8 @@ def get_donations(campaign_id, campaign: Campaign) -> list[Donation]:
             id=row['id'],
             amount=float(row['amount']),
             account=db._user_info_from_row(row),
-            campaign=campaign,
             tier=tier,
+            campaign=None,  # Campaign object is not required.
             notes=row['notes'] or '',
             receipt_id=row['receiptId'],
             payment_type=DonationPaymentType(row['paymentType']),
@@ -99,10 +90,12 @@ def get_donations(campaign_id, campaign: Campaign) -> list[Donation]:
     return donations
 
 
-def add_donation(donation: Donation) -> int:
-    if donation.campaign is None:
-        raise ValueError('A donation must be linked to a campaign.')
-    account_id = int(donation.account.id) if donation.account else None
+def add_donation(donation: DonationForm) -> int:
+    """
+    Save donation to database and return its id.
+    """
+   
+    payment_type = DonationPaymentType(donation.donation_payment.data)
     cursor = mysql.connection.cursor()
     try:
         cursor.execute(
@@ -113,19 +106,19 @@ def add_donation(donation: Donation) -> int:
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
-                donation.notes,
-                donation.receipt_id,
-                donation.payment_type.value,
-                account_id,
-                donation.campaign.id,
-                donation.tier.id,
-                donation.amount,
-                donation.is_anonymous,
+                donation.donor_message.data or '',
+                uuid.uuid4().hex,
+                payment_type.value,
+                int(donation.account_id.data),
+                int(donation.campaign_id.data),
+                int(donation.support_level.data),
+                float(donation.donation_amount.data),
+                bool(donation.anonymous_donation.data),
             ),
         )
-     
+        donation_id = cursor.lastrowid
         mysql.connection.commit()
-     
+        return donation_id
     except MySQLdb.Error:
         mysql.connection.rollback()
         raise
@@ -133,9 +126,14 @@ def add_donation(donation: Donation) -> int:
         cursor.close()
 
 
-def next_report_id() -> int:
-    return len(_reports) + 1
-
-
-def add_report(report: Report) -> None:
-    _reports.append(report)
+def get_tiers_by_campaign(campaign_id: int) -> list[Tier]:
+    rows =  db_campaign.query('SELECT id, name, amount, benefits FROM tiers WHERE campaignId = %s',(campaign_id,), one=False)
+    return [
+        Tier(
+            id=row['id'],
+            name=row['name'],
+            amount=float(row['amount']),
+            benefits=row['benefits'],
+        )
+        for row in rows
+    ]

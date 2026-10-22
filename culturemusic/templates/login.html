@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% from 'bootstrap5/form.html' import render_field %}
+{% import 'bootstrap5/form.html' as wtf %} 
 
 {% block title %}Log in{% endblock %}
 
@@ -12,15 +13,35 @@
           <h1 class="h4 mb-3">Log in</h1>
 
           <form method="post" action="{{ url_for('main.login') }}" novalidate>
-            {{ form.hidden_tag() }}
-            {% if request.args.get('next') %}
-            <input type="hidden" name="next" value="{{ request.args.get('next') }}" />
-            {% endif %}
-            {% for field in form if field.widget.input_type != 'hidden' and field.type != 'SubmitField' %}
-              {{ render_field(field) }}
-            {% endfor %}
-            <button type="submit" class="btn btn-primary w-100">Log in</button>
+             {{ form.hidden_tag() }}
+            {{ wtf.render_field(form.username) }}
+            {{ wtf.render_field(form.password) }}
+            {{ wtf.render_field(form.submit, class="btn btn-search") }}
           </form>
+
+            
+           <div class="container py-4">
+          <article >
+            <h2 class="update-card-title">Test Login Credentials For Assessment</h2>
+                 <strong>Usernames:</strong><br>                   
+                    <p>
+                    fundraiser1<br>
+                    fundraiser2<br>                      
+                    </p>                                   
+                    <p>
+                       supporter1<br>
+                       supporter2<br>
+                    </p>
+                    <p>
+                       admin1<br>
+                       admin2<br>
+                    </p>                   
+                    <strong>Password: Password123!</strong>
+            
+          </article>
+          </div>
+             
+          
           <p class="text-center text-muted mt-3 mb-0">
             No account yet? <a href="{{ url_for('main.register') }}">Register</a>
           </p>

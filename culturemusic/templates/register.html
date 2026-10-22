@@ -1,5 +1,7 @@
-{% extends 'base.html' %} {% import 'bootstrap5/form.html' as wtf %} {% block
-title %}Register | Culture Music{% endblock %} {% block main %}
+{% extends 'base.html' %} 
+{% import 'bootstrap5/form.html' as wtf %} 
+{% block title %}Register{% endblock %} 
+{% block main %}
 <section class="auth-section py-5">
   <div class="container">
     <div class="row justify-content-center">
@@ -12,7 +14,7 @@ title %}Register | Culture Music{% endblock %} {% block main %}
             organisations.
           </p>
 
-          <form method="post" novalidate>
+          <form method="post" action="{{ url_for('main.register') }}" novalidate>
             {{ form.hidden_tag() }} {{ wtf.render_field(form.username) }} {{
             wtf.render_field(form.password) }} {{ wtf.render_field(form.email)
             }} {{ wtf.render_field(form.firstname) }} {{
