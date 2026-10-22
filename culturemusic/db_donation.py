@@ -16,14 +16,6 @@ from .models import (
 _reports: list[Report] = []
 
 
-def get_campaign(campaign_id: Optional[int]) -> Optional[Campaign]:
-    return db_campaign.get_public_campaign(campaign_id)
-
-
-def get_account_info(account_id) -> Optional[UserInfo]:
-    return db.get_account_info(account_id)
-
-
 def get_posts(campaign_id) -> list[Post]:
     cursor = mysql.connection.cursor()
     try:
@@ -108,8 +100,8 @@ def get_donations(campaign_id, campaign: Campaign) -> list[Donation]:
 
 
 def add_donation(donation: Donation) -> int:
-    if donation.campaign is None or donation.tier is None:
-        raise ValueError('A donation must be linked to a campaign and tier.')
+    if donation.campaign is None:
+        raise ValueError('A donation must be linked to a campaign.')
     account_id = int(donation.account.id) if donation.account else None
     cursor = mysql.connection.cursor()
     try:
@@ -131,9 +123,9 @@ def add_donation(donation: Donation) -> int:
                 donation.is_anonymous,
             ),
         )
-        donation_id = cursor.lastrowid
+     
         mysql.connection.commit()
-        return donation_id
+     
     except MySQLdb.Error:
         mysql.connection.rollback()
         raise

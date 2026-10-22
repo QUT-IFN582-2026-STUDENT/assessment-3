@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 import uuid
 from typing import List, Optional, Tuple
-
-from . import db_donation
+from . import db, db_donation, db_campaign
 from .models import (
     Campaign,
     Donation,
@@ -20,20 +19,18 @@ class DonationPage:
     user: Optional[UserInfo]
 
 
-def get_campaign(campaign_id: Optional[int]) -> Optional[Campaign]:
-    return db_donation.get_campaign(campaign_id)
-
-
 def get_donation_page(campaign_id: Optional[int],account_id: Optional[int] = None,) -> Optional[DonationPage]:
-    campaign = get_campaign(campaign_id)
+   
+    campaign = db_campaign.get_public_campaign(campaign_id)
+    
     if campaign is None:
         return None
-
     user = (
-        db_donation.get_account_info(account_id)
+        db.get_account_info(account_id)
         if account_id is not None
         else None
     )
+  
     return DonationPage(
         campaign=campaign,
         posts=db_donation.get_posts(campaign.id),
@@ -52,40 +49,26 @@ def get_tier_choices(campaign: Campaign) -> List[Tuple[str, str]]:
 def submit_donation(
     campaign: Campaign,
     account_id,
-    amount: int,
+    amount: float,
     tier_id: str,
     notes: str,
     payment_value: str,
     is_anonymous: bool,
 ) -> None:
-    if account_id is None:
-        raise ValueError('Your account could not be loaded. Please sign in again.')
-
-    account = db_donation.get_account_info(account_id)
-    if account is None:
-        raise ValueError('Your account could not be loaded. Please sign in again.')
-
+    
+    user = UserInfo(id=account_id)
     tier = next(
         (tier for tier in campaign.tiers if str(tier.id) == tier_id),
         None,
     )
-    if tier is None:
-        raise ValueError('Please select a valid donor tier.')
-
-    payment_types = {
-        'Credit Card': DonationPaymentType.CREDIT_CARD,
-        'PayPal': DonationPaymentType.PAYPAL,
-        'Paypal': DonationPaymentType.PAYPAL,
-        'Google Pay': DonationPaymentType.GOOGLE_PAY,
-    }
-    payment_type = payment_types.get(payment_value)
-    if payment_type is None:
-        raise ValueError('Please select a valid payment method.')
-
+   
+  
+    payment_type = DonationPaymentType.find_by_value(payment_value) 
+    
     db_donation.add_donation(Donation(
         id=0,
         amount=amount,
-        account=account,
+        account=user,
         campaign=campaign,
         tier=tier,
         notes=notes,
