@@ -99,7 +99,7 @@ class Organisation:
     id: int
     name: str
     description: str
-    logo_url: str
+    logo_url: Optional[str] = None
 
 
 @dataclass

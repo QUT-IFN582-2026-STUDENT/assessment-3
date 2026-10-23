@@ -225,13 +225,13 @@
             {% elif not session.get('logged_in') %}
             <a
               class="btn btn-search"
-              href="{{ url_for('main.login', next=url_for('bp_donation.donation', campaign_id=campaign.id), notice='donation') }}"
+              href="{{ url_for('main.login', next=url_for('bp_donation.donation', campaign_id=campaign.id), check='not-login') }}"
               >Donate Now</a
             >
             {% else %}
             <a
               class="btn btn-search"
-              href="{{ url_for('bp_donation.donation', campaign_id=campaign.id, notice='supporter-required') }}"
+              href="{{ url_for('bp_donation.donation', campaign_id=campaign.id, check='supporter-required') }}"
               >Donate Now</a
             >
             {% endif %}

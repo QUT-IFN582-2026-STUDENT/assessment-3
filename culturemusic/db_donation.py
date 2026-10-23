@@ -6,13 +6,74 @@ from .forms import DonationForm
 from . import db, db_campaign, mysql
 from .models import (
     Campaign,
+    CampaignEventType,
+    CampaignStatusEnum,
     Donation,
     DonationPaymentType,
+    Organisation,
     Post,
-    Report,
     Tier,
 )
 
+
+def get_campaign(campaign_id: Optional[int]) -> Optional[Campaign]:
+    condition = ' AND c.id = %s' if campaign_id is not None else ''
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute(
+            f"""
+            SELECT
+                c.id, c.title, c.goalAmount, c.amountRaised, c.status,
+                c.location, c.eventDate, c.eventStartTime, c.eventEndTime,
+                c.overview, c.description, c.bannerImageUrl, c.isFeatured,
+                c.createdDate, c.updatedDate, c.publishDate, c.eventType,
+                supporter_count.supporter_count,
+                o.id AS org_id, o.name AS org_name,
+                o.description AS org_description
+            FROM campaigns c
+            LEFT JOIN organisations o ON o.id = c.orgId
+            LEFT JOIN (
+                SELECT campaignId, COUNT(*) AS supporter_count
+                FROM donations
+                GROUP BY campaignId
+            ) supporter_count ON supporter_count.campaignId = c.id
+            WHERE c.status = 'Active' {condition}
+            ORDER BY c.isFeatured DESC, c.eventDate ASC, c.id DESC
+            """,
+            (campaign_id,) if campaign_id is not None else (),
+        )
+        row = cursor.fetchone()
+    finally:
+        cursor.close()
+
+    if row is None:
+        return None
+
+    return Campaign(
+        _id=row['id'],
+        _title=row['title'],
+        _goal_amount=float(row['goalAmount']),
+        _amount_raised=float(row['amountRaised']),
+        _status=CampaignStatusEnum(row['status']),
+        _location=row['location'],
+        _event_date=row['eventDate'],
+        _event_start_time=row['eventStartTime'],
+        _event_end_time=row['eventEndTime'],
+        _overview=row['overview'],
+        _description=row['description'],
+        _banner_image_url=row['bannerImageUrl'] or '',
+        _event_type=CampaignEventType(row['eventType']),
+        _is_featured=bool(row['isFeatured']),
+        _created_date=row['createdDate'],
+        _updated_date=row['updatedDate'],
+        _publish_date=row['publishDate'],
+        supporter_count=int(row.get('supporter_count') or 0),
+        _organisation=Organisation(
+            id=row['org_id'],
+            name=row['org_name'],
+            description=row['org_description'] or '',
+        ) if row['org_id'] is not None else None,
+    )
 
 
 def get_posts(campaign_id) -> list[Post]:
@@ -34,8 +95,7 @@ def get_posts(campaign_id) -> list[Post]:
         for row in rows
     ]
 
-
-def get_donations(campaign_id: int) -> list[Donation]:
+def get_donations(campaign_id: int) -> list[Donation]:   
     cursor = mysql.connection.cursor()
     try:
         cursor.execute(
