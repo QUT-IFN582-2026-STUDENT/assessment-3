@@ -41,8 +41,7 @@ CREATE TABLE accounts (
 
 
 
--- Campaign atrributes according to UML
--- ---------------------------------------------------------------------------
+-- Campaign atrributes
 CREATE TABLE campaigns (
     id             INT AUTO_INCREMENT PRIMARY KEY,
     orgId          INT NOT NULL,
@@ -69,7 +68,7 @@ CREATE TABLE campaigns (
     INDEX idx_campaigns_creator (createdBy)
 );
 
--- Tier attributes according to UML
+-- Tier for campaign
 CREATE TABLE tiers (
     id         INT AUTO_INCREMENT PRIMARY KEY,
     campaignId INT           NOT NULL,
@@ -200,19 +199,28 @@ VALUES
  overview, description, bannerImageUrl, isFeatured,
  createdBy, createdDate, updatedDate, publishDate, eventType)
 VALUES
--- Brisbane -  Fri/Sat/Sun (3 events)
+-- Brisbane
 (1, 'Sound of OPM', 7000.00, 0.00, 'Active',
- '52 Costin St, Fortitude Valley QLD 4006','2026-10-23','2026-10-23 14:00:00','2026-10-23 17:00:00',
+ '52 Costin St, Fortitude Valley QLD 4006',
+ DATE_ADD(CURDATE(), INTERVAL 1 DAY),
+ DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 3 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 6 HOUR,
  'A showcase of Filipino-Australian youth performers.',
  'Funds support stage hire, sound equipment, and youth workshops.',
  'img/clickerhappy-mic-1132528_1920.jpg', 1, 1, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY, 'Ticketed'),
 (1, 'Brisbane Harmony Night', 9000.00, 0.00, 'Active',
- '7 Stratton St, Newstead QLD 4006','2026-10-25','2026-10-25 17:00:00','2026-10-25 21:00:00',
+ '7 Stratton St, Newstead QLD 4006',
+ DATE_ADD(CURDATE(), INTERVAL 1 DAY),
+ DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 5 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 8 HOUR,
  'A multicultural music night celebrating community harmony.',
  'Funds support performers and venue accessibility.',
  'img/thukka-ai-generated-8309769_1920.jpg', 0, 1, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 1 DAY, NOW() - INTERVAL 1 DAY, 'Free'),
 (1, 'Brisbane Folk Fusion', 6000.00, 0.00, 'Paused',
- '312 Brunswick St, Fortitude Valley QLD 4006','2026-10-24','2026-10-24 14:00:00','2026-10-24 21:00:00',
+ '312 Brunswick St, Fortitude Valley QLD 4006',
+ DATE_ADD(CURDATE(), INTERVAL 2 DAY),
+ DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 2 HOUR,
+ DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 5 HOUR,
  'A fusion of folk traditions from Southeast Asia.',
  'Funds support cultural instrument rentals and performers.',
  'img/dedy_timbul-gamelan-7852175_1920.jpg', 0, 1, NOW(), NOW(), NULL, 'Ticketed'),
@@ -224,7 +232,7 @@ VALUES
  DATE_ADD(NOW(), INTERVAL 1 WEEK) + INTERVAL 4 HOUR,
  'A festival of traditional and modern rhythms.',
  'Funds support festival logistics and youth participation.',
- 'img/pexels-mark-gil-pineda.jpg', 1, 1, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY, 'Free'),
+ 'img/pexels-mark-gil-pineda.jpg', 1, 1, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY, 'Ticketed'),
 (1, 'Brisbane Cultural Dance Night', 5000.00, 0.00, 'Pending',
  '480 Gregory Terrace, Bowen Hills QLD 4006',  -- The Old Museum
  DATE_ADD(CURDATE(), INTERVAL 1 WEEK),
@@ -242,7 +250,7 @@ VALUES
  'The Rinascita Sonora fundraiser will support a night of live performances celebrating the musical traditions of Italy and its diaspora. Funds will cover artist fees, accessible venue hire, equipment, and free community tickets so that local families can experience and share the music that makes Brisbane special.',
  'Funds support performers and stage equipment.',
  'img/artesitalia-conductor-5157153_1920.jpg', 1, 2,
- NOW(), NOW(), NOW(), 'Free'),
+ NOW(), NOW(), NOW(), 'Ticketed'),
 (2, 'Gold Coast Cultural Jam', 6500.00, 0.00, 'Active',
  '23 Hillcrest Parade, Miami QLD 4220',         -- Miami Marketta
  CURDATE(),
@@ -252,7 +260,7 @@ VALUES
  'Funds support venue hire and youth performers.',
  'img/pexels-fausto-ferreira.jpg', 0, 2,
  NOW(), NOW(), NOW(), 'Free'),
--- Gold Coast - TODAY (Pending)
+-- Gold Coast - TODAY (Suspended)
 (2, 'Gold Coast Heritage Voices', 7000.00, 0.00, 'Suspended',
  '36 Scarborough St, Southport QLD 4215',       -- Southport RSL Events Hall
  CURDATE(),
@@ -293,11 +301,11 @@ VALUES
  'A multicultural harmony festival.',
  'Funds support venue hire and performers.',
  'img/pexels-ej-agumbay.jpg', 0, 2, NOW(), NOW(), NOW(), 'Ticketed'),
-(1, 'Sunshine Coast Heritage Night', 7000.00, 0.00, 'Pending',
+(1, 'Sunshine Coast Heritage Night', 7000.00, 0.00, 'Active',
  '20 Minchinton St, Caloundra QLD 4551','2026-10-25','2026-10-24 14:00:00','2026-10-24 21:00:00',
  'A night celebrating cultural heritage.',
  'Funds support cultural instruments and performers.',
- 'img/pexels-diego-santos.jpg', 0, 2, NOW(), NOW(), NULL, 'Ticketed'),
+ 'img/pexels-diego-santos.jpg', 0, 1, NOW(), NOW(), NULL, 'Ticketed'),
 -- Sunshine Coast - Next month
 (2, 'Sunshine Coast Rhythm Festival', 11000.00, 0.00, 'Active',
  '10/12-20 Ocean St, Maroochydore QLD 4558',     -- Solbar
@@ -306,7 +314,7 @@ VALUES
  DATE_ADD(NOW(), INTERVAL 1 MONTH) + INTERVAL 4 HOUR,
  'A festival of rhythms and cultural performances.',
  'Funds support festival logistics and youth participation.',
- NULL, 1, 2, NOW(), NOW(), NOW(), 'Ticketed'),
+ NULL, 1, 1, NOW(), NOW(), NOW(), 'Ticketed'),
 (2, 'Sunshine Coast Cultural Dance Night', 5000.00, 0.00, 'Pending',
  '11 Millwell Rd E, Maroochydore QLD 4558',      -- Millwell Road Community Centre
  DATE_ADD(CURDATE(), INTERVAL 1 MONTH),
@@ -340,8 +348,6 @@ VALUES
 (4, 'Silver', 100.00, 'Priority seating'),
 (4, 'Gold', 250.00, 'VIP meet & greet'),
 -- Campaign 5 (Brisbane)
-(5, 'Bronze',   20.00, 'Name listed on donor wall.'),
-(5, 'Silver',   50.00, 'One free community ticket, event updates and name listed on donor wall.'),
 (5, 'Gold',    100.00, 'Highlighted name on donor wall, acknowledgement in the event program and two event tickets.'),
 (5, 'Platinum',250.00, 'Highlighted name on donor wall, sponsor recognition and four event tickets.'),
 -- Campaign 6 (Gold Coast)
@@ -350,7 +356,6 @@ VALUES
 (6, 'Melodia Silver', 120.00, 'Premium seating + artist Q&A access'),
 (6, 'Rinascita Gold Patron', 300.00, 'VIP lounge access + signed event program'),
 -- Campaign 7 (Gold Coast)
-(7, 'Jam Starter', 15.00, 'Exclusive behind-the-scenes mini clip'),
 (7, 'Groove Bronze', 50.00, 'Event merch discount + early entry'),
 (7, 'Rhythm Silver', 120.00, 'Front-row access + performer shout-out'),
 (7, 'Cultural Jam Gold', 300.00, 'VIP pit access + signed drumstick souvenir'),
@@ -359,18 +364,11 @@ VALUES
 (8, 'Platinum',250.00, 'A plaque on a raised bed and an invitation to the opening day.'),
 -- Campaign 9 (Gold Coast)
 (9, 'Supporter', 20.00, 'Social media thank-you'),
-(9, 'Bronze', 50.00, 'Event shout-out'),
-(9, 'Silver', 100.00, 'Priority seating'),
-(9, 'Gold', 250.00, 'VIP meet & greet'),
 -- Campaign 10 (Gold Coast)
-(10, 'Supporter', 20.00, 'Social media thank-you'),
-(10, 'Bronze', 50.00, 'Event shout-out'),
 (10, 'Silver', 100.00, 'Priority seating'),
 (10, 'Gold', 250.00, 'VIP meet & greet'),
 -- Campaign 11 (Sunshine Coast)
-(11, 'Wave Supporter', 18.00, 'Social media shout-out'),
 (11, 'Coastal Bronze', 45.00, 'Early venue entry + event sticker pack'),
-(11, 'Island Silver', 110.00, 'Front-row seating + performer meet & greet'),
 (11, 'Cultural Gold Tide', 260.00, 'VIP seating + exclusive backstage tour'),
 -- Campaign 12 (Sunshine Coast)
 (12, 'Supporter', 20.00, 'Social media thank-you'),
@@ -379,18 +377,12 @@ VALUES
 (12, 'Gold', 250.00, 'VIP meet & greet'),
 -- Campaign 13 (Sunshine Coast)
 (13, 'Supporter', 20.00, 'Social media thank-you'),
-(13, 'Bronze', 50.00, 'Event shout-out'),
-(13, 'Silver', 100.00, 'Priority seating'),
 (13, 'Gold', 250.00, 'VIP meet & greet'),
 -- Campaign 14 (Sunshine Coast)
 (14, 'Supporter', 20.00, 'Social media thank-you'),
-(14, 'Bronze', 50.00, 'Event shout-out'),
-(14, 'Silver', 100.00, 'Priority seating'),
 (14, 'Gold', 250.00, 'VIP meet & greet'),
 -- Campaign 15 (Sunshine Coast)
 (15, 'Bronze', 20.00, 'Thank-you message from the garden team.'),
-(15, 'Silver',50.00, 'Name on the garden thank-you board.'),
-(15, 'Gold', 250.00, 'Priority entry + souvenir wristband'),
 (15, 'Platinum',500.00, 'VIP meet & greet.');
 
 
@@ -398,20 +390,35 @@ VALUES
 INSERT INTO donations
 (notes, receiptId, paymentType, accountId, campaignId, tierId, amount, isAnonymous, createdDate)
 VALUES
-('Excited to support this cultural night — the lineup looks amazing!',
- 'RCP-GC-3001', 'Credit Card', 3, 6, 19, 50.00, 0,
+('Excited to support this cultural night, the lineup looks amazing! Looking forward for it.',
+ 'RCP-GC-3001', 'Credit Card', 3, 1, 1, 50.00, 0,
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 7 DAY),
-('I love the Italian musical heritage. Happy to contribute!',
- 'RCP-GC-3002', 'PayPal', 4, 6, 19, 20.00, 1,
+('I love the Italian musical heritage. Happy to contribute and join the fun.',
+ 'RCP-GC-3002', 'PayPal', 4, 2, 5, 20.00, 1,
  CONCAT(CURDATE(), ' 19:00:00') - INTERVAL 5 DAY),
-('Supporting local artists is important — keep the culture alive.',
- 'RCP-GC-3003', 'Credit Card', 8, 6, 21, 120.00, 0,
+('Supporting local artists is important. good vibe!',
+ 'RCP-GC-3003', 'Credit Card', 8, 4, 11, 120.00, 0,
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 3 DAY),
-('The rehearsals looked incredible. Proud to support this event.',
- 'RCP-GC-3004', 'Google Pay', 9, 6, 22, 300.00, 0,
+('The rehearsals looked incredible and had fun watching. Proud to support this event.',
+ 'RCP-GC-3004', 'Google Pay', 9, 14, 37, 300.00, 0,
  CONCAT(CURDATE(), ' 17:00:00') - INTERVAL 2 DAY),
-('Anonymous donation — wishing everyone a beautiful cultural night.',
- 'RCP-GC-3005', 'Credit Card', 10, 6, 20, 60.00, 1,
+('Wishing everyone a beautiful night. For sure it will be awesome.',
+ 'RCP-GC-3005', 'Credit Card', 10, 13, 35, 60.00, 1,
+ CONCAT(CURDATE(), ' 19:30:00') - INTERVAL 1 DAY),
+ ('Excited!.',
+ 'RCP-GC-3001', 'Credit Card', 3, 6, 17, 50.00, 0,
+ CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 7 DAY),
+('I am happy to contribute!',
+ 'RCP-GC-3002', 'PayPal', 4, 7, 21, 20.00, 1,
+ CONCAT(CURDATE(), ' 19:00:00') - INTERVAL 5 DAY),
+('Keep the heritage alive.',
+ 'RCP-GC-3003', 'Credit Card', 8, 9, 26, 120.00, 0,
+ CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 3 DAY),
+('Proud to support this event.',
+ 'RCP-GC-3004', 'Google Pay', 9, 11, 29, 300.00, 0,
+ CONCAT(CURDATE(), ' 17:00:00') - INTERVAL 2 DAY),
+('Enjoy the night.',
+ 'RCP-GC-3005', 'Credit Card', 10, 13, 31, 60.00, 1,
  CONCAT(CURDATE(), ' 19:30:00') - INTERVAL 1 DAY);
 
 
@@ -423,13 +430,25 @@ VALUES
  'img/pexels-violins-1838390_1920.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 5 DAY),
 (6, 'Artist Rehearsals',
- 'Our performers delivered an incredible rehearsal — the energy is unreal.',
+ 'Our performers delivered an incredible rehearsal..',
  'img/yannazazu-orchestra-2098877_1920.jpg',
  CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 2 DAY),
 (6, 'Final Technical Check',
- 'Sound and lighting checks are complete. Everything is ready for tonight!',
+ 'Sound and lighting checks are complete.',
  'img/pexels-vietfotos-18238104.jpg',
- CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 1 DAY);
+ CONCAT(CURDATE(), ' 18:00:00') - INTERVAL 1 DAY),
+ (1, 'Venue',
+ 'Venue is being set up for an unforgettable night.',
+ 'img/pexels-violins-1838390_1920.jpg',
+ CONCAT(CURDATE(), ' 16:00:00') - INTERVAL 5 DAY),
+(1, 'Rehearsals',
+ 'The energy is unreal.',
+ 'img/yannazazu-orchestra-2098877_1920.jpg',
+ CONCAT(CURDATE(), ' 16:00:00') - INTERVAL 2 DAY),
+(1, 'Final Check',
+ 'Everything is ready for tonight!',
+ 'img/pexels-vietfotos-18238104.jpg',
+ CONCAT(CURDATE(), ' 16:00:00') - INTERVAL 1 DAY);
 
  
 -- Reports for postId 1 & 2
@@ -437,5 +456,25 @@ INSERT INTO reports (id, postId, reportType, reportStatus, reviewedBy, createdDa
 VALUES
 (1,1, 'Spam', 'For Review', NULL,
  CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
-(2,2, 'Inappropriate content', 'Action Taken', 6,
+(2,1, 'Inappropriate content', 'Action Taken', 6,
+ CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY),
+(3,2, 'Spam', 'For Review', NULL,
+ CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
+(4,2, 'Inappropriate content', 'Action Taken', 6,
+ CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY),
+(5,3, 'Spam', 'For Review', NULL,
+ CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
+(6,3, 'Inappropriate content', 'Action Taken', 6,
+ CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY),
+ (7,4, 'Spam', 'For Review', NULL,
+ CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
+(8,4, 'Inappropriate content', 'Action Taken', 6,
+ CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY),
+(9,5, 'Spam', 'For Review', NULL,
+ CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
+(10,5, 'Inappropriate content', 'Action Taken', 6,
+ CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY),
+(11,6, 'Spam', 'For Review', NULL,
+ CONCAT(CURDATE(), ' 18:20:00') - INTERVAL 2 DAY),
+(12,6, 'Inappropriate content', 'Action Taken', 6,
  CONCAT(CURDATE(), ' 18:30:00') - INTERVAL 1 DAY);
