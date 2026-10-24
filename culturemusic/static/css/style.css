@@ -400,10 +400,14 @@ body {
   font-size: 1.9rem;
 }
 
-.featured-admin-table th:first-child,
-.featured-admin-table td:first-child {
+.admin-selectable-table th:first-child,
+.admin-selectable-table td:first-child {
   width: 1%;
+  min-width: 0;
   white-space: nowrap;
+  text-align: center;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 .admin-panel-heading {

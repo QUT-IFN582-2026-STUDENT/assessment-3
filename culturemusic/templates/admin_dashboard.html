@@ -1,11 +1,12 @@
-{% extends 'base.html' %} {% block title %}Admin Dashboard | Culture Music {%
-endblock %} {% block main %}
-
-<main class="admin-page">
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard
+{%endblock %} 
+{% block main %}
+<!-- Dashboard-->
+<div class="admin-page">
   <section
     class="container-fluid px-4 py-5"
-    aria-labelledby="admin-overview-heading"
-  >
+    aria-labelledby="admin-overview-heading">
     <div class="row g-4">
       <div class="col-12">
         <article class="fundraiser-panel mb-4">
@@ -16,38 +17,35 @@ endblock %} {% block main %}
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel admin-stat p-3">
                 <span class="admin-stat-label">Pending campaigns</span>
-                <strong class="admin-stat-value d-block">6</strong>
-                <span class="small text-muted">Awaiting review</span>
+                <strong class="admin-stat-value d-block">{{campaigns | selectattr('status', 'equalto', 'Pending') | list | length }}</strong>          
               </article>
             </div>
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel admin-stat p-3">
                 <span class="admin-stat-label">Active campaigns</span>
-                <strong class="admin-stat-value d-block">24</strong>
-                <span class="small text-muted">Currently published</span>
+                <strong class="admin-stat-value d-block">{{campaigns | selectattr('status', 'equalto', 'Active') | list | length }}</strong>    
               </article>
             </div>
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel admin-stat p-3">
-                <span class="admin-stat-label">Reported content</span>
-                <strong class="admin-stat-value d-block">4</strong>
-                <span class="small text-muted">Needs moderation</span>
+                <span class="admin-stat-label">Reported post</span>
+                <strong class="admin-stat-value d-block">{{post_reports | length }}</strong>
+              
               </article>
             </div>
             <div class="col-6 col-xl-3">
               <article class="fundraiser-panel admin-stat p-3">
-                <span class="admin-stat-label">Registered users</span>
-                <strong class="admin-stat-value d-block">486</strong>
-                <span class="small text-muted">28 new this month</span>
+                <span class="admin-stat-label">Accounts</span>
+                <strong class="admin-stat-value d-block">{{'accounts' | length }}</strong>
               </article>
             </div>
           </div>
         </article>
       </div>
     </div>
-
     <div class="row g-4">
       <div class="col-12">
+        <!--- Campaign Management List --->
         <article class="fundraiser-panel mb-4">
           <div
             class="admin-panel-heading d-flex justify-content-between align-items-center flex-wrap gap-2"
@@ -56,7 +54,7 @@ endblock %} {% block main %}
           </div>
           <span class="align-items-center">
             <p class="small text-muted">
-              Select campaign to review or change status.
+             Select row to change status.
             </p>
           </span>
           <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
@@ -64,53 +62,40 @@ endblock %} {% block main %}
               class="form-control admin-search"
               type="search"
               placeholder="Search campaign"
-              aria-label="Search campaign"
-            />
+              aria-label="Search campaign" />
             <label class="visually-hidden" for="campaign-status-filter"
-              >Filter campaigns by status</label
-            >
+              >Filter campaigns by status</label>
             <select
               class="form-select admin-filter-select"
-              id="campaign-status-filter"
-            >
+              id="campaign-status-filter">
               <option selected>All statuses</option>
               <option>Pending</option>
               <option>Active</option>
               <option>Paused</option>
               <option>Suspended</option>
-            </select>
-            <span class="admin-action-divider" aria-hidden="true"></span>
-            <button class="btn btn-sm btn-success" type="button">
-              Approve
-            </button>
-            <button class="btn btn-sm btn-outline-danger" type="button">
-              Reject
-            </button>
-            <button class="btn btn-sm btn-admin-action" type="button">
-              View
-            </button>
+          </select>
             <div class="admin-status-actions ms-xl-auto">
-              <span class="admin-status-label">Change Status</span>
-              <span class="admin-action-divider" aria-hidden="true"></span>
-              <button class="btn btn-sm btn-success" type="button">
-                Pause
-              </button>
-              <button class="btn btn-sm btn-outline-warning" type="button">
-                Suspend
-              </button>
-              <button class="btn btn-sm btn-outline-danger" type="button">
-                Delete
-              </button>
+              {% if can_change_status %}
+                <span class="admin-status-label">Change Status</span>
+                <form id="campaign-status-form" method="POST" action="{{ url_for('main.admin') }}" class="admin-status-actions">
+                  <input type="hidden" name="form_type" value="campaign_status">
+                {% for value, label, button_class in campaign_status_actions %}
+                  <span class="admin-action-divider" aria-hidden="true"></span>
+                  <button class="btn btn-sm {{ button_class }}" type="submit" name="status" value="{{ value }}">{{ label }}</button>
+                {% endfor %}
+                </form>
+              {% endif %}
             </div>
           </div>
 
           <div class="table-responsive">
-            <table class="table align-middle admin-table mb-0 table-hover">
+            <table class="table align-middle admin-table admin-selectable-table mb-0 table-hover">
               <caption class="visually-hidden">
                 Campaigns awaiting administration review
               </caption>
               <thead>
                 <tr>
+                  <th scope="col" aria-label="Select campaign"></th>
                   <th scope="col">Campaign</th>
                   <th scope="col">Organiser</th>
                   <th scope="col">Goal</th>
@@ -118,77 +103,73 @@ endblock %} {% block main %}
                   <th scope="col">Submitted Date</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <strong>Rinascita Sonora</strong>
-                  </td>
-                  <td>Italian Cultural Group</td>
-                  <td>$50,000</td>
-                  <td>
-                    <span class="badge admin-badge-pending">Pending</span>
-                  </td>
-                  <td>19 Aug 2026</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Voices of the Islands</strong>
-                  </td>
-                  <td>Pacific Arts Collective</td>
-                  <td>$35,000</td>
-                  <td>
-                    <span class="badge admin-badge-pending">Pending</span>
-                  </td>
-                  <td>18 Aug 2026</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Sound of Traditions</strong>
-                  </td>
-                  <td>Indonesian Community Association</td>
-                  <td>$40,000</td>
-                  <td>
-                    <span class="badge admin-badge-active">Active</span>
-                  </td>
-                  <td>12 Aug 2026</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Sound of OPM</strong>
-                  </td>
-                  <td>Pamana Filipino in Brisbane</td>
-                  <td>$50,000</td>
-                  <td>
-                    <span class="badge admin-badge-active">Active</span>
-                  </td>
-                  <td>12 Aug 2026</td>
-                </tr>
+                <tbody>
+                  {% for c in campaigns %}
+                  <tr data-status="{{ c.status }}">
+                    <td>
+                      <input class="form-check" type="radio" form="campaign-status-form"
+                        name="selected_campaign_ids" value="{{ c.id }}" aria-label="Select campaign {{ c.title }}">
+                    </td>
+                    <td>
+                      <a class="fw-bold text-decoration-none" href="{{ url_for('main.admin', campaign_id=c.id) }}">{{ c.title }}</a>
+                    </td>
+                    <td>{{ c.name or session.get('username') }}</td>
+                    <td>{{ c.goalAmount }}</td>
+                   <td>
+                     <span class="badge {% if c.status == 'active' %}status-badge{% else %}admin-badge-active{% endif %}">{{ c.status|capitalize }}</span>
+                    </td>
+                    <td>{{ c.createdDate }}</td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="6" class="text-muted">You have no campaigns yet.</td></tr>
+                  {% endfor %}
               </tbody>
             </table>
           </div>
+
+           <div class="campaign-form-actions d-flex flex-wrap align-items-start gap-3 mt-4">
+`            {% if campaign_selected %}
+            <details class="campaign-form-details" {% if request.args.get('edit') == 'true' or campaign_form.errors %} open{% endif %}>
+              <summary class="btn btn-sm btn-admin-action">View or Edit </summary>
+              <form class="campaign-edit-form mt-4" id="campaign-form-panel" method="post"
+                    enctype="multipart/form-data"
+                    action="{{ url_for('main.admin', campaign_id=campaign_selected.id, edit='true') }}">
+                {{ campaign_form.hidden_tag() }}
+                <input type="hidden" name="form_type" value="campaign">
+                <div class="campaign-panel-heading">
+                  <h3 class="section-title mb-0">Campaign Form</h3>
+                </div>
+                <div class="row g-3">
+                  <div class="col-12">{{ campaign_form.title }}</div>
+                  <div class="col-12">{{ campaign_form.overview }}</div>
+                  <div class="col-12">{{ campaign_form.description }}</div>
+                  <div class="col-md-4">{{ campaign_form.location }}</div>
+                  <div class="col-md-4">{{ campaign_form.event_date }}</div>
+                  <div class="col-md-4">{{ campaign_form.goal_amount }}</div>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                  <button class="btn btn-search" type="submit">Save Changes</button>
+                </div>
+              </form>
+            </details>
+            {% endif %}
+           </div>
         </article>
 
+
+        <!--- User Management List --->
         <article class="fundraiser-panel mb-4">
           <div class="admin-panel-heading">
             <h2 class="section-title mb-0">User Management</h2>
           </div>
           <span class="align-items-center">
-            <p class="small text-muted">Select user to manage the account.</p>
+            <p class="small text-muted">Check one row before changing an account status.</p>
           </span>
           <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-            <input
-              class="form-control admin-search"
-              type="search"
-              placeholder="Search users"
-              aria-label="Search users"
-            />
             <label class="visually-hidden" for="user-status-filter"
-              >Filter users by status</label
-            >
+              >Filter users by status</label>
             <select
               class="form-select admin-filter-select"
-              id="user-status-filter"
-            >
+              id="user-status-filter">
               <option selected>All statuses</option>
               <option>Active</option>
               <option>Pending</option>
@@ -196,195 +177,149 @@ endblock %} {% block main %}
             </select>
 
             <div class="admin-status-actions ms-xl-auto">
-              <button class="btn btn-sm btn-success" type="button">
-                Approve
-              </button>
-              <button class="btn btn-sm btn-outline-warning" type="button">
-                Suspend
-              </button>
-              <button class="btn btn-sm btn-outline-danger" type="button">
-                Delete
-              </button>
-              <button class="btn btn-sm btn-admin-action" type="button">
-                Edit
-              </button>
+              {% if can_change_status %}
+                <span class="admin-status-label">Change Status</span>
+                <form id="account-status-form" method="POST" action="{{ url_for('main.admin') }}" class="admin-status-actions">
+                  <input type="hidden" name="form_type" value="account_status">
+              {% for value, label, button_class in [('active', 'Activate / Approve', 'btn-success'), ('suspended', 'Suspend', 'btn-outline-warning'), ('closed', 'Close', 'btn-outline-danger')] %}
+                  <span class="admin-action-divider" aria-hidden="true"></span>
+                  <button class="btn btn-sm {{ button_class }}" type="submit" name="status" value="{{ value }}">{{ label }}</button>
+              {% endfor %}
+                </form>
+              {% endif %}
             </div>
           </div>
+  
           <div class="table-responsive">
-            <table class="table align-middle admin-table mb-0 table-hover">
+            <table class="table align-middle admin-table admin-selectable-table mb-0 table-hover">
               <caption class="visually-hidden">
                 Registered fundraiser and administrator accounts
               </caption>
               <thead>
                 <tr>
+                  <th scope="col" aria-label="Select account"></th>
                   <th scope="col">User</th>
                   <th scope="col">Organisation</th>
                   <th scope="col">Role</th>
                   <th scope="col">Created Date</th>
-                  <th scope="col">Updated Date</th>
                   <th scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>
+                {% for a in accounts %}
                 <tr>
                   <td>
-                    <strong>Maria Rossi</strong>
-                    <span class="d-block small text-muted"
-                      >Maria.Rossi@italianccqld.org.au</span
-                    >
+                    <input class="form-check" type="radio" form="account-status-form"
+                      name="selected_account_ids" value="{{ a.id }}" aria-label="Select account {{ a.username }}">
                   </td>
-                  <td>Italian Cultural Centre</td>
-                  <td>Fundraiser</td>
-                  <td>12 Aug 2026</td>
-                  <td>19 Aug 2026</td>
+                  <td><strong>{{ a.username }}</strong><span class="d-block small text-muted">{{ a.email }}</span></td>
+                  <td>{{ a.name }}</td>
+                  <td>{{ a.role}} </td>
+                  <td>{{ a.created_at }}</td>
                   <td>
-                    <span class="badge admin-badge-active">Active</span>
+                    <span class="badge {% if a.accountStatus|lower == 'active' %}admin-badge-active{% elif a.accountStatus|lower == 'pending' %}admin-badge-pending{% elif a.accountStatus|lower == 'suspended' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                      {{ a.accountStatus | title }}
+                    </span>
                   </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>James Wilson</strong>
-                    <span class="d-block small text-muted"
-                      >James.Wilson@culturemusic.org.au</span
-                    >
-                  </td>
-                  <td>Culture Music Festival</td>
-                  <td>Admin</td>
-                  <td>10 Aug 2026</td>
-                  <td>20 Aug 2026</td>
-                  <td>
-                    <span class="badge admin-badge-active">Active</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Lani Tavita</strong>
-                    <span class="d-block small text-muted"
-                      >Lani.Tavita@pacificarts.org</span
-                    >
-                  </td>
-                  <td>Pacific Arts Collective</td>
-                  <td>Fundraiser</td>
-                  <td>18 Aug 2026</td>
-                  <td>18 Aug 2026</td>
-                  <td>
-                    <span class="badge admin-badge-pending">Pending</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Andy Lim</strong>
-                    <span class="d-block small text-muted"
-                      >Andy.Lim@pamana.org</span
-                    >
-                  </td>
-                  <td>Pamana Filipino in Brisbane</td>
-                  <td>Fundraiser</td>
-                  <td>10 Aug 2026</td>
-                  <td>20 Aug 2026</td>
-                  <td>
-                    <span class="badge admin-badge-pending">Pending</span>
-                  </td>
-                </tr>
+                  {% else %}
+                  <tr><td colspan="6" class="text-muted">No registered users found.</td></tr>
+                  {% endfor %}
               </tbody>
             </table>
           </div>
         </article>
 
+
+        <!--- Reported Content Management List --->
         <article class="fundraiser-panel mb-4">
           <div
-            class="admin-panel-heading d-flex justify-content-between align-items-center"
-          >
-            <h2 class="section-title mb-0">Reported Content or Post</h2>
-            <span class="badge admin-badge-reported">2 reports</span>
+            class="admin-panel-heading d-flex justify-content-between align-items-center">
+            <h2 class="section-title mb-0">Reported Post</h2>
+            <span class="badge admin-badge-reported">{{post_reports | selectattr('reportStatus', 'equalto', 'Review') | list | length }} reports pending for review</span>
           </div>
           <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
             <p class="small text-muted">
-              Select reported content to take action.
+              Select one row before changing a report status.
             </p>
             <div class="admin-status-actions ms-xl-auto">
-              <button class="btn btn-sm btn-admin-action" type="button">
-                Review
-              </button>
-              <button class="btn btn-sm btn-outline-secondary" type="button">
-                Keep
-              </button>
-              <button class="btn btn-sm btn-outline-danger" type="button">
-                Remove
-              </button>
+              {% if can_change_status %}
+                <span class="admin-status-label">Change Status</span>
+                <form id="post-report-status-form" method="POST" action="{{ url_for('main.admin') }}" class="admin-status-actions">
+                  <input type="hidden" name="form_type" value="post_report_status">
+                {% for value, label, button_class in [('Action Taken', 'Resolve', 'btn-success'), ('Removed', 'Delete', 'btn-outline-danger'), ('No Action', 'Reject', 'btn-outline-success')] %}
+                  <span class="admin-action-divider" aria-hidden="true"></span>
+                  <button class="btn btn-sm {{ button_class }}" type="submit" name="status" value="{{ value }}">{{ label }}</button>
+                {% endfor %}
+                </form>
+              {% endif %}
             </div>
           </div>
           <div class="table-responsive">
-            <table class="table align-middle admin-table mb-0 table-hover">
+            <table class="table align-middle admin-table admin-selectable-table mb-0 table-hover">
               <caption class="visually-hidden">
-                Reported campaigns and content
+                Reported post
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Campaign</th>
+                  <th scope="col" aria-label="Select reported content"></th>
+                  <th scope="col">Title</th>
                   <th scope="col">Reported Date</th>
                   <th scope="col">Type</th>
                   <th scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><strong>Rinascita Sonora update</strong></td>
-                  <td>20 Aug 2026</td>
+                {% for r in post_reports %}
+                <tr data-status="{{ r.reportStatus }}">
+                  <td>
+                    <input class="form-check" type="radio" form="post-report-status-form"
+                      name="selected_report_ids" value="{{ r.id }}" aria-label="Select reported item {{ r.title }}">
+                  </td>
+                  <td><strong>{{ r.title }}</strong></td>
+                  <td>{{ r.createdDate }}</td>
                   <td>
                     <span class="badge admin-badge-reported"
-                      >Misleading information</span
-                    >
+                      >{{ r.reportType }}</span>
                   </td>
                   <td>
                     <span class="badge admin-badge-pending"
-                      >Pending review</span
-                    >
+                      >{{ r.reportStatus }}</span>
                   </td>
-                </tr>
-                <tr>
-                  <td><strong>Voices of the Islands campaign</strong></td>
-                  <td>19 Aug 2026</td>
-                  <td>
-                    <span class="badge admin-badge-reported"
-                      >Inappropriate content</span
-                    >
-                  </td>
-                  <td>
-                    <span class="badge admin-badge-pending"
-                      >Pending review</span
-                    >
-                  </td>
-                </tr>
-              </tbody>
+                  {% else %}
+                  <tr><td colspan="5" class="text-muted">No reported content found.</td></tr>
+                {% endfor %}
+                </tbody>
             </table>
           </div>
         </article>
 
+
+        <!---Featured Funraiser options-->
         <article class="fundraiser-panel mb-4">
           <div class="admin-panel-heading">
             <h2 class="section-title mb-0">Featured Campaigns</h2>
           </div>
+          <form method="POST" action="{{ url_for('main.admin') }}">
+            <input type="hidden" name="form_type" value="featured_campaigns">
           <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
             <p class="small text-muted">
               Select campaigns to display in Featured Fundraisers on the home
               page.
             </p>
             <div class="admin-status-actions ms-xl-auto">
-              <button class="btn btn-search" type="button">Confirm</button>
+              <button class="btn btn-search" type="submit">Save</button>
             </div>
           </div>
 
           <div class="table-responsive">
             <table
-              class="table align-middle admin-table featured-admin-table mb-0 table-hover"
-            >
+              class="table align-middle admin-table admin-selectable-table featured-admin-table mb-0 table-hover">
               <caption class="visually-hidden">
                 Campaigns available to be featured
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Select</th>
+                  <th scope="col" aria-label="Select featured campaign"></th>
                   <th scope="col">Campaign</th>
                   <th scope="col">Event Date</th>
                   <th scope="col">Raised</th>
@@ -392,103 +327,32 @@ endblock %} {% block main %}
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                {% for c in campaigns %}
+                <tr  data-status="{{ c.status }}">
                   <td>
                     <input
                       class="form-check-input"
                       type="checkbox"
-                      id="featured-spirit"
-                      checked
-                    />
+                      id="featured-campaign-{{ c.id }}"
+                      name="featured_campaign_ids"
+                      value="{{ c.id }}"
+                      {% if c.isFeatured %}checked{% endif %}/>
                   </td>
-                  <td>
-                    <label class="form-check-label" for="featured-spirit"
-                      ><strong>Spirit of Country</strong></label
-                    >
-                  </td>
-                  <td>30 Sep 2026</td>
-                  <td>$11,500</td>
-                  <td>Active</td>
+                  <td>{{ c.title }}</td>
+                  <td>{{ c.eventStartTime }}</td>
+                  <td>{{ c.goalAmount }}</td>
+                  <td>{{ c.status }}</td>
                 </tr>
-                <tr>
-                  <td>
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="featured-folkfest"
-                      checked
-                    />
-                  </td>
-                  <td>
-                    <label class="form-check-label" for="featured-folkfest">
-                      <strong>FolkFest Live Charity Night</strong>
-                    </label>
-                  </td>
-                  <td>28 Sep 2026</td>
-                  <td>$17,200</td>
-                  <td>Active</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="featured-unite"
-                    />
-                  </td>
-                  <td>
-                    <label class="form-check-label" for="featured-unite">
-                      <strong>Gamelan Nusantara</strong>
-                    </label>
-                  </td>
-                  <td>15 Sep 2026</td>
-                  <td>$41,800</td>
-                  <td>Active</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="featured-traditions"
-                      checked
-                    />
-                  </td>
-                  <td>
-                    <label class="form-check-label" for="featured-traditions">
-                      <strong>Fiesta del Movimiento</strong>
-                    </label>
-                  </td>
-                  <td>26 Aug 2026</td>
-                  <td>$20,900</td>
-                  <td>Active</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="featured-opm"
-                    />
-                  </td>
-                  <td>
-                    <label class="form-check-label" for="featured-opm"
-                      ><strong>Sound of OPM</strong></label
-                    >
-                  </td>
-                  <td>28 Sep 2026</td>
-                  <td>$32,500</td>
-                  <td>Active</td>
-                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-muted">You have no campaigns yet.</td></tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
-          <div class="d-flex justify-content-between align-items-center mt-4">
-            <span class="small text-muted">3 of 4 slots selected</span>
-          </div>
+          </form>
         </article>
       </div>
     </div>
   </section>
-</main>
+</div>
 {% endblock %}

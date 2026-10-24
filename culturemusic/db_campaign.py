@@ -1,14 +1,26 @@
-from . import db, mysql
+from . import  mysql
 import MySQLdb
 
-from .models import (
-    Campaign, CampaignEventType, CampaignStatusEnum,
-    Organisation, Tier, UserAccount,
-)
 
 # Statuses a fundraiser is allowed to switch between.
 # pending / rejected / suspended belong to administrators.
 FUNDRAISER_STATUSES = ('active', 'paused', 'closed')
+ALL_STATUSES = ('pending', 'active', 'paused', 'closed', 'rejected', 'suspended')
+ADMIN_CAMPAIGN_STATUS_ACTIONS = (
+    ('active', 'Approve', 'btn-success'),
+    ('rejected', 'Reject', 'btn-outline-danger'),
+    ('active', 'Activate', 'btn-outline-success'),
+    ('paused', 'Pause', 'btn-outline-warning'),
+    ('closed', 'Close', 'btn-outline-danger'),
+)
+ADMIN_CAMPAIGN_STATUS_TRANSITIONS = {
+    'active': ('pending', 'paused'),
+    'rejected': ('pending',),
+    'paused': ('active',),
+    'closed': ('active', 'paused', 'suspended', 'rejected', 'draft'),
+}
+ACCOUNT_ALLOWED_STATUSES = ('active', 'suspended', 'closed')  # must match the accounts.accountStatus enum
+POST_REPORT_ALLOWED_STATUSES = ('Review', 'Action Taken', 'No Action', 'Removed')  # for admin dashboard post management
 
 # UML column
 CAMPAIGN_COLUMNS = """
@@ -382,3 +394,162 @@ def get_donations_by_day(campaign_id, fundraiser_id):
         """,
         (campaign_id, fundraiser_id),
     )
+
+def get_all_campaigns():
+    """Return all campaigns and their respective fields."""
+  
+    return query(
+        """
+        SELECT c.*, o.name AS name
+        FROM campaigns c
+        LEFT JOIN organisations o ON o.id = c.orgId
+        ORDER BY c.createdDate DESC
+        """,
+    )
+
+
+def set_featured_campaigns(campaign_ids):
+    """Set the complete list of featured campaigns from the admin selection."""
+    if campaign_ids:
+        placeholders = ', '.join(['%s'] * len(campaign_ids))
+        sql = f"""
+            UPDATE campaigns
+            SET isFeatured = CASE WHEN id IN ({placeholders}) THEN 1 ELSE 0 END
+        """
+        execute(sql, tuple(campaign_ids))
+    else:
+        execute('UPDATE campaigns SET isFeatured = 0')
+
+
+def get_all_accounts():
+    """Get all accounts associated with an organisation"""
+    return query(
+        """
+        SELECT *
+        FROM accounts a
+        LEFT JOIN organisations o ON o.id = a.orgId
+        """,
+    )
+def check_admin():
+    """
+    Check all the accounts which are admins.
+    """
+    return query(
+        """
+        SELECT *
+        FROM accounts
+        WHERE role = 'Admin'
+        """,
+    )
+
+def check_all_post_content():
+    """
+    Check all of the content from the report alongside the posts and campaigns.
+    """
+    return query(
+        """
+        SELECT *
+        FROM reports r
+        LEFT JOIN posts p ON r.postId = p.id
+        LEFT JOIN campaigns c ON p.campaignId = c.id"""
+    )
+
+def admin_update_campaign_status(campaign_id, new_status):
+    """Administrator status change for campaigns. Can set any status, including pending/rejected/suspended.
+    """
+    if new_status not in ALL_STATUSES:
+        return False
+    matched, _ = execute(
+        """
+        UPDATE campaigns
+        SET status = %s,
+        publishDate = CASE WHEN %s = 'active' AND publishDate IS NULL
+        THEN NOW() ELSE publishDate END
+        WHERE id = %s
+        """,
+        (new_status.title(), new_status, campaign_id),
+    )
+    return matched == 1
+
+def admin_update_account_status(account_id, new_status):
+    """Set an administrator-controlled account status allowed by the database enum.
+    """
+    if new_status not in ACCOUNT_ALLOWED_STATUSES:
+        return False
+    matched, _ = execute(
+        """
+        UPDATE accounts
+        SET accountStatus = %s
+        WHERE id = %s
+        """,
+        (new_status.title(), account_id),
+    )
+    return matched == 1
+
+def admin_update_post_report_status(post_id, request_status):
+    """Administrator status change for post report statuses. Can set any status, including Action Taken/Removed/No Action.
+    """
+    if request_status not in POST_REPORT_ALLOWED_STATUSES:
+        return False
+    if request_status == 'Removed':
+        matched, _ = execute(
+                """
+                DELETE FROM reports
+                WHERE id = %s
+                """,
+                (post_id,),
+            )    
+        return matched == 1
+    
+    matched, _ = execute(
+        """
+        UPDATE reports
+        SET reportStatus = %s
+        WHERE id = %s
+        """,
+        (request_status, post_id),
+    )
+    return matched == 1
+
+def get_post_reports():
+    """
+    Get all the information from the reports alongside the post title with its associated campaign.
+    """
+    return query(
+        """
+        SELECT r.*, p.title, c.title
+        FROM reports r
+        LEFT JOIN posts p ON r.postId = p.id
+        LEFT JOIN campaigns c ON p.campaignId = c.id;
+        """,
+    )
+
+def stats_count_report():
+    """
+    Count the total number of reports.
+    """
+    return query(
+        """
+        SELECT COUNT(*)
+        FROM reports r"""
+    )
+
+def update_campaign_as_admin(campaign_id, fundraiser_id, title, overview, description,
+                    location, goal_amount, event_date=None, event_start_time=None,
+                    event_end_time=None, event_type=None, banner_image_url=None):
+    """
+    Edit campaign details. Update for any edited changes made.
+    """
+    matched, _ = execute(
+        """
+        UPDATE campaigns
+        SET title = %s, overview = %s, description = %s, location = %s,
+            goalAmount = %s, eventDate = %s, eventStartTime = %s, eventEndTime = %s,
+            eventType = %s, bannerImageUrl = COALESCE(%s, bannerImageUrl)
+        WHERE id = %s AND createdBy = %s
+        """,
+        (title, overview, description, location, goal_amount, event_date,
+         event_start_time, event_end_time, event_type, banner_image_url,
+         campaign_id, fundraiser_id),
+    )
+    return matched == 1

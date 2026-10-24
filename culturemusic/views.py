@@ -38,6 +38,31 @@ def fundraiser_required(view):
         return view(*args, **kwargs)
     return wrapped
 
+def admin_required(view):
+    """Only an authenticated admin may open the decorated page."""
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get('logged_in'):
+            flash('Please log in as an admin to manage campaigns.', 'error')
+            return redirect(url_for('main.login'))
+        if session.get('role') != 'Admin':
+            flash('Only admins can access administrator management.', 'error')
+            return redirect(url_for('main.index'))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def _selected_admin_row_id(field_name, row_label):
+    selected_ids = request.form.getlist(field_name)
+    if len(selected_ids) != 1:
+        flash(f'Select exactly one {row_label} using its checkbox.', 'error')
+        return None
+    try:
+        return int(selected_ids[0])
+    except ValueError:
+        flash(f'The selected {row_label} is invalid.', 'error')
+        return None
+
 
 def save_image(file_storage, directory='img'):
     """Save an uploaded image and return its web path, or '' if there is none."""
@@ -412,11 +437,167 @@ def export_donations(campaign_id):
     )
 
 
-@bp.route('/admin/')
+
+
+@bp.route('/admin/', methods=['GET', 'POST'])
+@admin_required
 def admin():
-    return render_template('admin_dashboard.html')
+
+    user_id = session['user_id']
+
+    is_admin = cm.check_admin() #Check if the user is a valid admin
+
+    campaigns = cm.get_all_campaigns()         # only this admin's campaigns
+
+    accounts = cm.get_all_accounts()         #Retrieve all accounts for admin view
+
+    post_reports = cm.get_post_reports()  #Retrieve all post reports for admin view
+
+    
+    selected_id = request.values.get('campaign_id', type=int)
+
+    campaign_selected = next((c for c in campaigns if c['id'] == selected_id), None) #Filter through the list of admin's campaigns
+
+    campaign_form = CampaignForm(prefix='campaign') #Used to edit the pre filled campaign form
+
+    #Prefill the edit form on the normal page load for campaigns
+    if campaign_selected and request.method == 'GET':
+        campaign_form.title.data = campaign_selected['title']
+        campaign_form.overview.data = campaign_selected['overview']
+        campaign_form.description.data = campaign_selected['description']
+        campaign_form.location.data = campaign_selected['location']
+        campaign_form.goal_amount.data = campaign_selected['goalAmount']
+        campaign_form.event_date.data = campaign_selected['eventDate']
+        
+    
+    form_type = request.form.get('form_type') if request.method == 'POST' else None
+
+    if request.method == 'POST' and form_type == 'featured_campaigns':
+        raw_featured_ids = request.form.getlist('featured_campaign_ids')
+        try:
+            selected_featured_ids = [int(campaign_id) for campaign_id in raw_featured_ids]
+        except ValueError:
+            flash('The featured campaign selection is invalid.', 'error')
+            return redirect(url_for('main.admin'))
+
+        campaign_ids = {campaign['id'] for campaign in campaigns}
+        if any(campaign_id not in campaign_ids for campaign_id in selected_featured_ids):
+            flash('One or more selected campaigns could not be found.', 'error')
+            return redirect(url_for('main.admin'))
+
+        cm.set_featured_campaigns(selected_featured_ids)
+        flash('Featured campaigns updated successfully.', 'success')
+        return redirect(url_for('main.admin'))
+
+    if request.method == 'POST' and form_type == 'campaign_status':
+        selected_campaign_id = _selected_admin_row_id('selected_campaign_ids', 'campaign')
+        selected_campaign = next(
+            (campaign for campaign in campaigns if campaign['id'] == selected_campaign_id),
+            None,
+        )
+        requested_status = request.form.get('status', '').lower()
+        allowed_from = cm.ADMIN_CAMPAIGN_STATUS_TRANSITIONS.get(requested_status)
+        current_status = (
+            selected_campaign.get('status', '').lower()
+            if selected_campaign else ''
+        )
+
+        if selected_campaign_id is not None:
+            if selected_campaign is None:
+                flash('The selected campaign could not be found.', 'error')
+            elif allowed_from is None:
+                flash('That campaign status action is not allowed.', 'error')
+            elif current_status not in allowed_from:
+                flash('That status change is not valid for this campaign.', 'error')
+            elif cm.admin_update_campaign_status(selected_campaign_id, requested_status):
+                flash(f'Campaign status updated to {requested_status.title()}.', 'success')
+            else:
+                flash('The campaign status could not be updated.', 'error')
+
+        return redirect(url_for(
+            'main.admin',
+            campaign_id=selected_campaign_id,
+        ))
+
+    # --- Edit the campaign as an admin ---
+    if form_type == 'campaign' and campaign_selected:
+        if campaign_form.validate_on_submit():
+            try:
+                check_campaign_lengths(campaign_form)
+                start, end, event_type = read_campaign_extras('campaign')
+            except ValueError as error:
+                flash(str(error), 'error')
+            else:
+                ok = cm.update_campaign_as_admin(
+                    campaign_selected['id'], user_id,
+                    campaign_form.title.data,
+                    campaign_form.overview.data,
+                    campaign_form.description.data,
+                    campaign_form.location.data,
+                    campaign_form.goal_amount.data,
+                    campaign_form.event_date.data,
+                    event_start_time=start,
+                    event_end_time=end,
+                    event_type=event_type,
+                )
+                if ok:
+                    flash('Campaign edited successfully!')
+                    return redirect(url_for('main.admin', campaign_id=campaign_selected['id']))
+                else:
+                    flash('Update failed.', 'error')         
+            flash('Please check the submitted details.', 'error')
 
 
+
+    # --- Used to update the account status of a specific user ---
+    if request.method =='POST' and form_type == 'account_status':
+        selected_user_id = _selected_admin_row_id('selected_account_ids', 'account')
+        requested_status = request.form.get('status', '')
+
+        account_exists = any(account['id'] == selected_user_id for account in accounts)
+        if selected_user_id is not None:
+            if not account_exists:
+                flash('The selected account could not be found.', 'error')
+            elif requested_status not in cm.ACCOUNT_ALLOWED_STATUSES:
+                flash('That status is not allowed.', 'error')
+            elif cm.admin_update_account_status(selected_user_id, requested_status):
+                flash(f'Account status updated to {requested_status.title()}.', 'success')
+            else:
+                flash('This account cannot be updated to this status.', 'error')
+
+        return redirect(url_for('main.admin', user_id=selected_user_id))
+
+
+
+    # --- Used to update the report status from a specific reported post ---
+    if request.method == 'POST' and form_type == 'post_report_status':
+        selected_report_id = _selected_admin_row_id('selected_report_ids', 'reported item')
+        requested_status = request.form.get('status', '')
+        report_exists = any(report['id'] == selected_report_id for report in post_reports)
+        if selected_report_id is not None:
+            if not report_exists:
+                flash('The selected reported item could not be found.', 'error')
+            elif requested_status not in cm.POST_REPORT_ALLOWED_STATUSES:
+                flash('That status is not allowed.', 'error')
+            elif cm.admin_update_post_report_status(selected_report_id, requested_status):
+                flash(f'Report status updated to {requested_status}.', 'success')
+            else:
+                flash('This report cannot be updated to that status.', 'error')
+
+        return redirect(url_for('main.admin'))
+    
+
+    return render_template('admin_dashboard.html', campaign_form=campaign_form,
+                           campaigns = campaigns,
+                           campaign_selected = campaign_selected,
+                           campaign_status_actions=cm.ADMIN_CAMPAIGN_STATUS_ACTIONS,
+                           is_admin = is_admin,
+                           selected_id = selected_id,
+                           can_change_status=True,
+                           accounts = accounts,
+                           user_id = user_id,
+                           post_reports = post_reports,
+                           )
 
 # Authentication
 

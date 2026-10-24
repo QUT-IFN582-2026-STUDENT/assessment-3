@@ -49,7 +49,7 @@ class ReportType(Enum):
         return self.value
 
 class ReportStatus(Enum):
-    FOR_REVIEW = 'For Review'
+    FOR_REVIEW = 'Review'
     ACTION_TAKEN = 'Action Taken'
     NO_ACTION = 'No Action'
 
@@ -87,7 +87,7 @@ class UserInfo:
 @dataclass
 class UserAccount:
     """Merged with the former 'Account' class used by Campaign.createdBy.
-    role: 'admin' | 'fundraiser' | 'supporter'"""
+    role: 'Admin' | 'Fundraiser' | 'Supporter'"""
     username: str
     password: str
     info: UserInfo
@@ -323,7 +323,7 @@ class Campaign:
         return True
 
     def changeStatus(self, status: CampaignStatusEnum, actor_role: str = 'fundraiser') -> bool:
-        if actor_role == 'admin':
+        if actor_role == 'Admin':
             self._status = status
             self._touch()
             return True

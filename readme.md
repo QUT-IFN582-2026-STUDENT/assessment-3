@@ -21,9 +21,3 @@ supporter1/Password123!
 supporter2/Password123!
 
 ```
-
-# Version Control
-
-See the complete beginner guide, including feature branches, merge conflict resolution, VS Code's Merge Editor, `git mergetool`, and pull requests:
-
-[Git and VS Code Workflow Guide](docs/git-vscode-workflow.html)
